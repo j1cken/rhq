@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<alert-plugin
+        name="alert-xymon"
+        displayName="Alert:Xymon"
+        xmlns="urn:xmlns:rhq-serverplugin.alert"
+        xmlns:c="urn:xmlns:rhq-configuration"
+        xmlns:serverplugin="urn:xmlns:rhq-serverplugin"
+        package="org.rhq.enterprise.server.plugins.alertXymon"
+        description="Alert sender plugin that sends alert notifications to Xymon monitoring system"
+        >
+
+    <serverplugin:help>
+        Used to send notifications to a Xymon monitoring server.
+    </serverplugin:help>
+
+    <!-- Global preferences for all xymon alerts -->
+    <serverplugin:plugin-configuration>
+        <c:simple-property name="binary" default="/usr/local/bin/bb" displayName="Xymon binary" type="string" required="true"
+                           description="Binary used for sending notifications to Xymon (e.g. /usr/local/bin/bb)."/>
+        <c:simple-property name="host" displayName="Xymon host" type="string" required="true"
+                           description="Host which Xymon is running on. More Xymon hosts are separated by a pipe (e. g. server1:1234|server2:5678)."/>
+        <c:simple-property name="hostSuffix" default="wdog" displayName="Xymon host suffix" type="string" required="true"
+                           description="Host suffix. It's appended to the hostname as a discriminator for hobbit (e. g. wdog)"/>
+        <c:simple-property name="prefix" default="jboss" displayName="Xymon service prefix" type="string"
+                           description="Prefix used for notifications sent from JON to Xymon service (e.g. jboss). Character '-' is appended automatically."/>
+        <c:simple-property name="groupResources" default="false" displayName="Group identical resources" type="boolean"
+                           description="If resources of the same type are sent as a group (e.g. datasources). Beware: Load of database will increase heavily!"/>
+        <c:simple-property name="lifetime" default="30m" displayName="Lifetime of a status message" type="string"
+                           description="The LIFETIME defines how long this status is valid after being received by the Xymon server. The default is 30 minutes, but you can set any period you like. E.g. for a custom test that runs once an hour, you will want to set this to at least 60 minutes - otherwise the status will go purple after 30 minutes. It is a good idea to set the LIFETIME to slightly longer than the interval between your tests, to allow for variations in the time it takes your test to complete. The LIFETIME is in minutes, unless you add an 'h' (hours), 'd' (days) or 'w' (weeks) immediately after the number, e.g. 'status+5h' for a status that is valid for 5 hours."/>
+    </serverplugin:plugin-configuration>
+
+    <!-- How does this sender show up in drop downs etc -->
+    <short-name>Xymon</short-name>
+
+    <!-- Class that does the actual sending -->
+    <plugin-class>XymonSender</plugin-class>
+
+
+    <!-- What can a user configure when defining an alert -->
+    <alert-configuration>
+        <c:simple-property name="host" displayName="Xymon host" type="string" required="false"
+                           description="Host which Xymon is running on. More Xymon hosts are separated by a pipe (e. g. server1:1234|server2:5678)." />
+        <c:simple-property name="prefix" displayName="Xymon service prefix" type="string" required="false"
+                           description="Prefix used for notifications sent from JON to Xymon service (e.g. jboss). Character '-' is appended automatically."/>
+        <!-- override of boolean ! -->
+         <c:simple-property name="groupResources" default="false" displayName="Group identical resources" type="boolean" required="false" description="If resources of the same type are sent as a group (e.g. datasources). Beware: Load of database will increase heavily!"/>
+        <c:simple-property name="lifetime" default="30m" displayName="Lifetime of a status message" type="string"
+                           description="The LIFETIME defines how long this status is valid after being received by the Xymon server. The default is 30 minutes, but you can set any period you like. E.g. for a custom test that runs once an hour, you will want to set this to at least 60 minutes - otherwise the status will go purple after 30 minutes. It is a good idea to set the LIFETIME to slightly longer than the interval between your tests, to allow for variations in the time it takes your test to complete. The LIFETIME is in minutes, unless you add an 'h' (hours), 'd' (days) or 'w' (weeks) immediately after the number, e.g. 'status+5h' for a status that is valid for 5 hours."/>
+    </alert-configuration>
+
+</alert-plugin>

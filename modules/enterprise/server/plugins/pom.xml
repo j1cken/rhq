@@ -82,6 +82,7 @@
     <module>alert-subject</module>
     <module>alert-cli</module>
     <module>alert-log4j</module>
+    <module>alert-xymon</module>
     <module>cobbler</module>
     <module>drift-rhq</module>
     <!-- spinder,jsanda 8/26/11: Disabled from list of server plugins as
