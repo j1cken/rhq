@@ -33,6 +33,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,9 +69,9 @@ public class FileUtil {
     /**
      * Given a directory, this will recursively purge all child directories and files.
      * If dir is actually a normal file, it will be deleted but only if deleteIt is true.
-     * 
+     *
      * If deleteIt is true, the directory itself will be deleted, otherwise it will remain (albeit empty).
-     * 
+     *
      * @param dir the directory to purge (if <code>null</code>, this method does nothing and returns normally)
      * @param deleteIt if <code>true</code> delete the directory itself, otherwise leave it but purge its children
      */
@@ -100,6 +101,77 @@ public class FileUtil {
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(inFile));
         BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outFile));
         StreamUtil.copy(is, os);
+    }
+
+    public static void copyDirectory(File inDir, File outDir) throws IOException {
+        if (inDir.exists()) {
+            if (!inDir.isDirectory()) {
+                throw new IOException("Source directory [" + inDir + "] is not a directory");
+            }
+        } else {
+            throw new FileNotFoundException("Source directory [" + inDir + "] does not exist");
+        }
+
+        if (!outDir.mkdirs()) {
+            throw new IOException("Destination directory [" + outDir + "] failed to be created");
+        }
+
+        if (!canWrite(outDir)) {
+            throw new IOException("Cannot write to destination directory [" + outDir + "]");
+        }
+
+        // TODO do we care to restore the last mod time on the destination dir?
+        //outDir.setLastModified(inDir.lastModified());
+
+        File[] files = inDir.listFiles();
+        if (files == null) {
+            throw new IOException("Failed to get the list of files in source directory [" + inDir + "]");
+        }
+        for (File file : files) {
+            File copiedFile = new File(outDir, file.getName());
+            if (file.isDirectory()) {
+                copyDirectory(file, copiedFile);
+            } else {
+                copyFile(file, copiedFile);
+            }
+        }
+
+        files = null; // help GC
+        return;
+    }
+
+    /**
+     * Obtains the list of all files in the given directory and, recursively, all its subdirectories.
+     * Note that the returns list is only regular files - directory names are NOT in the list. Also,
+     * the names in the list are relative to the given directory.
+     * @param directory the directory whose files are to be returned
+     * @return list of files in the directory, not sorted in any particular order
+     * @throws IOException if directory does not exist or is not a directory 
+     */
+    public static List<File> getDirectoryFiles(File directory) throws IOException {
+        ArrayList<File> files = new ArrayList<File>();
+        if (!directory.isDirectory()) {
+            throw new IOException("[" + directory + "] is not an existing directory");
+        }
+        getDirectoryFilesRecursive(directory, files, null);
+        return files;
+    }
+
+    private static void getDirectoryFilesRecursive(File directory, List<File> files, String relativeTo)
+        throws IOException {
+        File[] children = directory.listFiles();
+        if (children == null) {
+            throw new IOException("Cannot obtain files from directory [" + directory + "]");
+        }
+        for (File child : children) {
+            if (child.isDirectory()) {
+                getDirectoryFilesRecursive(child, files, ((relativeTo == null) ? "" : relativeTo) + child.getName()
+                    + File.separatorChar);
+            } else {
+                files.add(new File(relativeTo, child.getName()));
+            }
+        }
+        return;
     }
 
     /**
@@ -297,7 +369,7 @@ public class FileUtil {
     /**
      * Strips the drive letter from the given Windows path. The drive letter is returned
      * or <code>null</code> is returned if there was no drive letter in the path.
-     *  
+     *
      * @param path the path string that will be altered to have its drive letter stripped.
      * @return if there was a drive letter, it will be returned. If no drive letter was in path, null is returned
      */
@@ -326,7 +398,7 @@ public class FileUtil {
      * Return just the filename portion (the portion right of the last path separator string)
      * @param path
      * @param separator
-     * @return null if path is null, otherwise the trimmed filename  
+     * @return null if path is null, otherwise the trimmed filename
      */
     public static String getFileName(String path, String separator) {
         if (null == path) {
@@ -353,11 +425,14 @@ public class FileUtil {
 
         while (!directories.isEmpty()) {
             File dir = directories.pop();
-            for (File file : dir.listFiles()) {
-                if (file.isDirectory()) {
-                    directories.push(file);
-                } else {
-                    visitor.visit(file);
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        directories.push(file);
+                    } else {
+                        visitor.visit(file);
+                    }
                 }
             }
         }
@@ -409,17 +484,25 @@ public class FileUtil {
                 first = false;
             }
             regex.append("(");
-            File path = new File(filter.getPath());
+            File pathFile = new File(filter.getPath());
 
-            if (isEmpty(filter.getPattern()) && path.isDirectory()) {
+            if (isEmpty(filter.getPattern()) && pathFile.isDirectory()) {
                 regex.append(".*");
-            } else if (isEmpty(filter.getPattern()) && !path.isDirectory()) {
-                buildPatternRegex(path.getAbsolutePath(), regex);
+            } else if (isEmpty(filter.getPattern()) && !pathFile.isDirectory()) {
+                buildPatternRegex(pathFile.getAbsolutePath(), regex);
+
             } else if (!isEmpty(filter.getPattern())) {
                 // note that this case assumes path is a directory. We probably
                 // need another if else block for when there is a pattern and
                 // path is not a directory.
-                regex.append(path).append("/").append("(");
+
+                // escape win separators because backslash is a regex character
+                String pathString = pathFile.getAbsolutePath();
+                if (!pathString.endsWith(File.separator)) {
+                    pathString += File.separator;
+                }
+                pathString = pathString.replace("\\", "\\\\");
+                regex.append(pathString).append("(");
                 buildPatternRegex(filter.getPattern(), regex);
                 regex.append(")");
             }
@@ -432,8 +515,11 @@ public class FileUtil {
         for (int i = 0; i < pattern.length(); i++) {
             char c = pattern.charAt(i);
             if (c == '?') {
+                // ? match any character
                 regex.append('.');
+
             } else if (c == '*') {
+                // ? match zero or more characters
                 if (i + 1 < pattern.length()) {
                     char c2 = pattern.charAt(i + 1);
                     if (c2 == '*') {
@@ -442,13 +528,23 @@ public class FileUtil {
                         continue;
                     }
                 }
-                regex.append("[^/]*");
+                String separator = File.separator;
+                if ("\\".equals(separator)) {
+                    separator = "\\\\";
+                }
+                regex.append("[^" + separator + "]*");
+
             } else if (c == '.') {
+                // escape file extensions because dot is a regex character
                 regex.append("\\.");
+
+            } else if (c == '\\') {
+                // escape windows separators because backslash is a regex character
+                regex.append("\\\\");
+
             } else {
                 regex.append(c);
             }
-            // TODO: Escape backslashes.
         }
     }
 

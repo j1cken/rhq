@@ -296,7 +296,7 @@
                 </schema-directSQL>
                 <schema-alterColumn table="RHQ_SERVER" column="OPERATION_MODE" nullable="FALSE" />
 
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_SERVER unique constraint on NAME">
                         CREATE UNIQUE INDEX rhq_server_name_unique ON rhq_server (name)
                     </statement>
@@ -853,7 +853,7 @@
             </schemaSpec>
 
             <schemaSpec version="2.24">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_MEASUREMENT_BLINE index on SCHEDULE_ID">
                         CREATE INDEX rhq_meas_baseline_sid_idx ON rhq_measurement_bline (schedule_id)
                     </statement>
@@ -1078,7 +1078,7 @@
             </schemaSpec>
 
             <schemaSpec version="2.36">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Deleting unique constraint on RHQ_MEASUREMENT_DEF">
                         DROP INDEX RHQ_METRIC_DEF_KEY_IDX
                     </statement>
@@ -1093,7 +1093,7 @@
                         WHERE NUMERIC_TYPE = 0
                     </statement>
                 </schema-directSQL>
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating unique index on RHQ_MEASUREMENT_DEF (RESOURCE_TYPE_ID, NAME, RAW_NUMERIC_TYPE)">
                         CREATE UNIQUE INDEX RHQ_METRIC_DEF_KEY_IDX ON RHQ_MEASUREMENT_DEF (RESOURCE_TYPE_ID, NAME, RAW_NUMERIC_TYPE)
                     </statement>
@@ -1193,49 +1193,77 @@
 
             <!-- RHQ 1448 -->
             <schemaSpec version="2.44">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R00 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R00_SID_IDX ON RHQ_MEAS_DATA_NUM_R00 (schedule_id)
-                     </statement>
+                    </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R01 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R01_SID_IDX ON RHQ_MEAS_DATA_NUM_R01 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R02 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R02_SID_IDX ON RHQ_MEAS_DATA_NUM_R02 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R03 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R03_SID_IDX ON RHQ_MEAS_DATA_NUM_R03 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R04 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R04_SID_IDX ON RHQ_MEAS_DATA_NUM_R04 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R05 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R05_SID_IDX ON RHQ_MEAS_DATA_NUM_R05 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R06 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R06_SID_IDX ON RHQ_MEAS_DATA_NUM_R06 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R07 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R07_SID_IDX ON RHQ_MEAS_DATA_NUM_R07 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R08 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R08_SID_IDX ON RHQ_MEAS_DATA_NUM_R08 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R09 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R09_SID_IDX ON RHQ_MEAS_DATA_NUM_R09 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R10 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R10_SID_IDX ON RHQ_MEAS_DATA_NUM_R10 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R11 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R11_SID_IDX ON RHQ_MEAS_DATA_NUM_R11 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R12 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R12_SID_IDX ON RHQ_MEAS_DATA_NUM_R12 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R13 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R13_SID_IDX ON RHQ_MEAS_DATA_NUM_R13 (schedule_id)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R14 (SCHEDULE_ID)">
                         CREATE INDEX RHQ_MEAS_DATA_R14_SID_IDX ON RHQ_MEAS_DATA_NUM_R14 (schedule_id)
                     </statement>
@@ -1300,7 +1328,7 @@
             </schemaSpec>
 
             <schemaSpec version="2.50">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_RESOURCE_ERROR.RESOURCE_ID">
                         CREATE INDEX RHQ_RES_ERROR_IDX_RES_ID ON RHQ_RESOURCE_ERROR (RESOURCE_ID)
                     </statement>
@@ -1313,12 +1341,12 @@
             </schemaSpec>
 
             <schemaSpec version="2.52">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Deleting unique name constraint on RHQ_RESOURCE_GROUP">
                         DROP INDEX RHQ_RES_GROUP_NAME
                     </statement>
                 </schema-directSQL>
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Deleting unique name constraint on RHQ_RESOURCE_GROUP">
                         CREATE INDEX RHQ_RES_GROUP_NAME ON RHQ_RESOURCE_GROUP (name)
                     </statement>
@@ -1348,57 +1376,87 @@
             </schemaSpec>
 
             <schemaSpec version="2.55">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on TIME_STAMP column of RHQ_MEASUREMENT_DATA_NUM_1H">
                         CREATE INDEX RHQ_MEAS_DATA_1H_TIME_IDX ON RHQ_MEASUREMENT_DATA_NUM_1H(TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on TIME_STAMP column of RHQ_MEASUREMENT_DATA_NUM_6H">
                         CREATE INDEX RHQ_MEAS_DATA_6H_TIME_IDX ON RHQ_MEASUREMENT_DATA_NUM_6H(TIME_STAMP)
                     </statement>
                 </schema-directSQL>
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R00 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R00_TS_IDX ON RHQ_MEAS_DATA_NUM_R00 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R01 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R01_TS_IDX ON RHQ_MEAS_DATA_NUM_R01 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R02 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R02_TS_IDX ON RHQ_MEAS_DATA_NUM_R02 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R03 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R03_TS_IDX ON RHQ_MEAS_DATA_NUM_R03 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R04 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R04_TS_IDX ON RHQ_MEAS_DATA_NUM_R04 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R05 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R05_TS_IDX ON RHQ_MEAS_DATA_NUM_R05 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R06 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R06_TS_IDX ON RHQ_MEAS_DATA_NUM_R06 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R07 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R07_TS_IDX ON RHQ_MEAS_DATA_NUM_R07 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R08 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R08_TS_IDX ON RHQ_MEAS_DATA_NUM_R08 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>                
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R09 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R09_TS_IDX ON RHQ_MEAS_DATA_NUM_R09 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R10 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R10_TS_IDX ON RHQ_MEAS_DATA_NUM_R10 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R11 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R11_TS_IDX ON RHQ_MEAS_DATA_NUM_R11 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R12 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R12_TS_IDX ON RHQ_MEAS_DATA_NUM_R12 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R13 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R13_TS_IDX ON RHQ_MEAS_DATA_NUM_R13 (TIME_STAMP)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Creating index on RHQ_MEAS_DATA_NUM_R14 (TIME_STAMP)">
                         CREATE INDEX RHQ_MEAS_DATA_R14_TS_IDX ON RHQ_MEAS_DATA_NUM_R14 (TIME_STAMP)
                     </statement>
@@ -1406,49 +1464,77 @@
             </schemaSpec>
 
             <schemaSpec version="2.56">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R00_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R00_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R01_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R01_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R02_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R02_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R03_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R03_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R04_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R04_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                  
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R05_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R05_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                   
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R06_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R06_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R07_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R07_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R08_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R08_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R09_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R09_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                  
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R10_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R10_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R11_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R11_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R12_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R12_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R13_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R13_SID_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping index on RHQ_MEAS_DATA_R14_SID_IDX">
                         DROP INDEX RHQ_MEAS_DATA_R14_SID_IDX
                     </statement>
@@ -1456,7 +1542,7 @@
             </schemaSpec>
 
             <schemaSpec version="2.57">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Create index on RHQ_CONFIG_PROPERTY(PARENT_LIST_ID)">
                         CREATE INDEX RHQ_CONFIG_PROP_idx_list_key ON RHQ_CONFIG_PROPERTY(PARENT_LIST_ID)
                     </statement>
@@ -1683,6 +1769,8 @@
                         FOREIGN KEY ( REPO_GROUP_TYPE_ID )
                         REFERENCES RHQ_REPO_GROUP_TYPE ( ID )
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_REPO_GROUP_IDX
                         ON RHQ_REPO_GROUP ( NAME, REPO_GROUP_TYPE_ID )
@@ -1842,7 +1930,7 @@
                 <schema-alterColumn table="RHQ_DISTRIBUTION" column="BASE_PATH" nullable="false" />
                 <schema-addColumn   table="RHQ_DISTRIBUTION" column="LAST_MODIFIED" columnType="LONG" />
                 <schema-alterColumn table="RHQ_DISTRIBUTION" column="LAST_MODIFIED" nullable="false" />
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_DISTRIBUTION_IDX ON RHQ_DISTRIBUTION ( LABEL, BASE_PATH )
                     </statement>
@@ -1947,6 +2035,8 @@
                         FOREIGN KEY (DISTRIBUTION_ID)
                         REFERENCES RHQ_DISTRIBUTION ( ID )
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement>
                         CREATE UNIQUE INDEX RHQ_DISTRIBUTION_FILE_IDX
                         ON RHQ_DISTRIBUTION_FILE ( DISTRIBUTION_ID, RELATIVE_FILENAME )
@@ -2019,7 +2109,7 @@
                 </schema-directSQL>
 
                 <!-- Fix bug:538157 -->
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE INDEX RHQ_REPO_PKG_VER_MAP_IDX
                         ON RHQ_REPO_PKG_VERSION_MAP ( PACKAGE_VERSION_ID )
@@ -2040,10 +2130,12 @@
 
             <schemaSpec version="2.69.2">
                 <!-- plugin names must be unique only if they are deployed on the same side (agent vs. server) -->
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping unique index on RHQ_PLUGIN (NAME)">
                         DROP INDEX RHQ_PLUGIN_NAME_IDX
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating unique index on RHQ_PLUGIN (NAME, DEPLOYMENT) so server plugin names need not be unique with agent plugins">
                         CREATE UNIQUE INDEX RHQ_PLUGIN_NAME_DEPLOY_IDX ON RHQ_PLUGIN (NAME, DEPLOYMENT)
                     </statement>
@@ -2086,7 +2178,7 @@
                 <schema-addColumn table="RHQ_ALERT_NOTIF_LOG" column="MESSAGE" columnType="VARCHAR2" precision="4000" />
             </schemaSpec>
             <schemaSpec version="2.70.3">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Dropping unique index RHQ_ALERT_IDX_ALERT">
                         DROP INDEX RHQ_ALERT_IDX_ALERT
                     </statement>
@@ -2127,7 +2219,7 @@
                 <schema-deleteColumn table="RHQ_ALERT"           column="triggered_operation" />
             </schemaSpec>
             <schemaSpec version="2.70.7">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Recreating RHQ_ALERT_IDX_ALERT as non-unique index">
                         CREATE INDEX RHQ_ALERT_IDX_ALERT ON RHQ_ALERT_NOTIF_LOG (alert_id)
                     </statement>
@@ -2168,13 +2260,17 @@
                 <schema-addColumn   table="RHQ_ADVISORY" column="LAST_MODIFIED" columnType="LONG" />
                 <schema-alterColumn table="RHQ_ADVISORY" column="LAST_MODIFIED" nullable="false" />
 
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_ADVISORY_NAME_UQ ON RHQ_ADVISORY ( ADVISORY_NAME )
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_ADVISORY_UQ ON RHQ_ADVISORY ( ADVISORY )
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE INDEX RHQ_ADVISORY_UDATE_IDX ON RHQ_ADVISORY (UPDATE_DATE )
                     </statement>
@@ -2193,7 +2289,7 @@
                 <schema-alterColumn table="RHQ_ADVISORY_PACKAGE" column="PACKAGE_VERSION_ID" nullable="false" />
                 <schema-addColumn   table="RHQ_ADVISORY_PACKAGE" column="LAST_MODIFIED" columnType="LONG" />
                 <schema-alterColumn table="RHQ_ADVISORY_PACKAGE" column="LAST_MODIFIED" nullable="false" />
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_ADVISORY_PACKAGE_IDX ON RHQ_ADVISORY_PACKAGE ( ADVISORY_ID, PACKAGE_VERSION_ID )
                     </statement>
@@ -2234,7 +2330,7 @@
                 <schema-alterColumn table="RHQ_ADVISORY_CVE" column="CVE_ID" nullable="false" />
                 <schema-addColumn   table="RHQ_ADVISORY_CVE" column="LAST_MODIFIED" columnType="LONG" />
                 <schema-alterColumn table="RHQ_ADVISORY_CVE" column="LAST_MODIFIED" nullable="false" />
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_ADVISORY_CVE_IDX ON RHQ_ADVISORY_CVE ( ADVISORY_ID, CVE_ID )
                     </statement>
@@ -2266,7 +2362,7 @@
                 <schema-alterColumn table="RHQ_ADVISORY_BUGLIST" column="BUG_ID" nullable="false" />
                 <schema-addColumn   table="RHQ_ADVISORY_BUGLIST" column="LAST_MODIFIED" columnType="LONG" />
                 <schema-alterColumn table="RHQ_ADVISORY_BUGLIST" column="LAST_MODIFIED" nullable="false" />
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                        CREATE UNIQUE INDEX RHQ_ADVISORY_BUG_IDX ON RHQ_ADVISORY_BUGLIST ( ADVISORY_ID, BUG_ID )
                    </statement>
@@ -2365,6 +2461,8 @@
                         FOREIGN KEY (RESOURCE_TYPE_ID)
                         REFERENCES RHQ_RESOURCE_TYPE (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_BUNDLE_TYPE unique constraint">
                         CREATE UNIQUE INDEX RHQ_BUNDLE_TYPE_UNIQUE ON RHQ_BUNDLE_TYPE (name)
                     </statement>
@@ -2406,6 +2504,8 @@
                         FOREIGN KEY (PACKAGE_TYPE_ID)
                         REFERENCES RHQ_PACKAGE_TYPE (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_BUNDLE unique constraint">
                         CREATE UNIQUE INDEX RHQ_BUNDLE_UNIQUE ON RHQ_BUNDLE (bundle_type_id, name)
                     </statement>
@@ -2444,6 +2544,8 @@
                         FOREIGN KEY (CONFIG_DEF_ID)
                         REFERENCES RHQ_CONFIG_DEF (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_BUNDLE_VERSION unique constraint">
                         CREATE UNIQUE INDEX RHQ_BUNDLE_VERSION_UNIQUE ON RHQ_BUNDLE_VERSION (bundle_id, name, version)
                     </statement>
@@ -2539,6 +2641,8 @@
                         FOREIGN KEY (GROUP_ID)
                         REFERENCES RHQ_RESOURCE_GROUP (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_BUNDLE_DESTINATION unique constraint">
                         CREATE UNIQUE INDEX RHQ_BUNDLE_DESTINATION_UNIQUE
                         ON RHQ_BUNDLE_DESTINATION (bundle_id, group_id, deploy_dir)
@@ -2630,6 +2734,8 @@
                         FOREIGN KEY (RESOURCE_ID)
                         REFERENCES RHQ_RESOURCE (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating RHQ_BUNDLE_RES_DEPLOY unique constraint on dep-resource mapping">
                         CREATE UNIQUE INDEX RHQ_BUNDLE_RES_DEPLOY_IDX
                         ON RHQ_BUNDLE_RES_DEPLOY (BUNDLE_DEPLOYMENT_ID, RESOURCE_ID)
@@ -2788,6 +2894,8 @@
                         FOREIGN KEY ( ROLE_ID )
                         REFERENCES RHQ_ROLE (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement>
                         CREATE UNIQUE INDEX RHQ_ROLE_LDAP_GROUP_IDX
                         ON RHQ_ROLE_LDAP_GROUP ( ROLE_ID, LDAP_GROUP_NAME )
@@ -2996,10 +3104,12 @@
             </schemaSpec>
 
             <schemaSpec version="2.87">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Drop non-unique RHQ_RES_TYPE_IDX_PLG_NAME index">
                         DROP INDEX RHQ_RES_TYPE_IDX_PLG_NAME
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Recreate RHQ_RES_TYPE_IDX_PLG_NAME index as unique">
                         CREATE UNIQUE INDEX RHQ_RES_TYPE_IDX_PLG_NAME ON RHQ_RESOURCE_TYPE (name, plugin)
                     </statement>
@@ -3007,10 +3117,12 @@
             </schemaSpec>
 
             <schemaSpec version="2.88">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Add end time index on call time data to speed up purges">
                         CREATE INDEX RHQ_CT_DA_VA_END_TIM_IDX ON RHQ_CALLTIME_DATA_VALUE (end_time)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Add index on measurement definition numeric type">
                         CREATE INDEX RHQ_METRIC_DEF_NT_IDX ON RHQ_MEASUREMENT_DEF (numeric_type)
                     </statement>
@@ -3131,7 +3243,7 @@
             </schemaSpec>
 
             <schemaSpec version="2.92.4">
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Add index on measurement data 1d table timestamp">
                         CREATE INDEX RHQ_MEAS_DATA_1D_TIME_IDX ON RHQ_MEASUREMENT_DATA_NUM_1D (time_stamp)
                     </statement>
@@ -3294,6 +3406,8 @@
                     <statement desc="Changing primary key of RHQ_OPERATION_SCHEDULE to ID. Step2/3...">
                         ALTER TABLE RHQ_OPERATION_SCHEDULE ADD PRIMARY KEY (ID)
                     </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">                    
                     <statement desc="Changing primary key of RHQ_OPERATION_SCHEDULE to ID. Step3/3...">
                         CREATE UNIQUE INDEX RHQ_OPERATION_SCHEDULE_KEY_IDX ON RHQ_OPERATION_SCHEDULE (JOB_NAME, JOB_GROUP)
                     </statement>
@@ -3370,12 +3484,12 @@
                     </statement>
                 </schema-directSQL>
 
-                <!-- Now add modify the permissions to give all the roles with MANAGE_INVENTORY
-                the new  MANAGE_REPOSITORIES privilege so that people's privs remain unchanged. -->
+                <!-- Now modify the permissions to give all the roles with MANAGE_INVENTORY, except for
+                all-resources-role, the new  MANAGE_REPOSITORIES privilege so that privs remain unchanged. -->
                 <schema-directSQL>
                     <statement>
                         INSERT INTO RHQ_PERMISSION (role_id, operation)
-                            SELECT role_id, 15 FROM RHQ_PERMISSION WHERE operation = 1
+                            SELECT role_id, 15 FROM RHQ_PERMISSION WHERE operation = 1 AND NOT role_id = 2 
                     </statement>
                 </schema-directSQL>
             </schemaSpec>
@@ -3443,6 +3557,200 @@
             </schemaSpec>
 
             <schemaSpec version="2.111">
+                 <!-- RHQ_DRIFT_FILE -->
+                 <schema-directSQL>
+                     <statement targetDBVendor="postgresql" desc="Creating table RHQ_DRIFT_FILE">
+                         CREATE TABLE RHQ_DRIFT_FILE (HASH_ID character varying(64) PRIMARY KEY)
+                     </statement>
+                     <statement targetDBVendor="oracle" desc="Creating table RHQ_DRIFT_FILE">
+                         CREATE TABLE RHQ_DRIFT_FILE (HASH_ID VARCHAR2(64) PRIMARY KEY)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT_FILE" column="CTIME" columnType="LONG" />
+                 <schema-alterColumn table="RHQ_DRIFT_FILE" column="CTIME" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_FILE" column="DATA" columnType="LARGEOBJECT" />
+                 <schema-addColumn   table="RHQ_DRIFT_FILE" column="DATA_SIZE" columnType="LONG" />
+                 <schema-addColumn   table="RHQ_DRIFT_FILE" column="STATUS" columnType="VARCHAR2" precision="20" />
+                 <schema-alterColumn table="RHQ_DRIFT_FILE" column="STATUS" nullable="FALSE" />
+
+                 <!-- RHQ_DRIFT_CONFIG -->
+                 <schema-createSequence name="RHQ_DRIFT_CONFIG_ID_SEQ" initial="10001" />
+                 <schema-directSQL>
+                     <statement desc="Creating table RHQ_DRIFT_CONFIG">
+                         CREATE TABLE RHQ_DRIFT_CONFIG (ID INTEGER PRIMARY KEY)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="CTIME" columnType="LONG" />
+                 <schema-alterColumn table="RHQ_DRIFT_CONFIG" column="CTIME" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="NAME" columnType="VARCHAR2" precision="512" />
+                 <schema-alterColumn table="RHQ_DRIFT_CONFIG" column="NAME" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="INTERVAL" columnType="LONG" />
+                 <schema-alterColumn table="RHQ_DRIFT_CONFIG" column="INTERVAL" nullable="FALSE" />                
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="IS_ENABLED" columnType="BOOLEAN" />
+                 <schema-alterColumn table="RHQ_DRIFT_CONFIG" column="IS_ENABLED" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="CONFIG_ID" columnType="INTEGER" />
+                 <schema-alterColumn table="RHQ_DRIFT_CONFIG" column="CONFIG_ID" nullable="FALSE" />                
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT_CONFIG foreign key relation to RHQ_CONFIG">
+                         ALTER TABLE RHQ_DRIFT_CONFIG
+                         ADD CONSTRAINT RHQ_DC_CONFIG_ID_FK
+                         FOREIGN KEY (CONFIG_ID)
+                         REFERENCES RHQ_CONFIG (ID)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT_CONFIG" column="RESOURCE_ID" columnType="INTEGER" />                
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT_CONFIG foreign key relation to RHQ_RESOURCE">
+                         ALTER TABLE RHQ_DRIFT_CONFIG
+                         ADD CONSTRAINT RHQ_DC_RESOURCE_ID_FK
+                         FOREIGN KEY (RESOURCE_ID)
+                         REFERENCES RHQ_RESOURCE (ID)
+                     </statement>
+                 </schema-directSQL>
+
+                 
+                 <!-- RHQ_DRIFT_CHANGE_SET -->
+                 <schema-createSequence name="RHQ_DRIFT_CHANGE_SET_ID_SEQ" initial="10001" />
+                 <schema-directSQL>
+                     <statement desc="Creating table RHQ_DRIFT_CHANGE_SET">
+                         CREATE TABLE RHQ_DRIFT_CHANGE_SET (ID INTEGER PRIMARY KEY)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="CTIME" columnType="LONG" />
+                 <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="CTIME" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="VERSION" columnType="INTEGER" />
+                 <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="VERSION" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="CATEGORY" columnType="VARCHAR2" precision="20" />
+                 <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="CATEGORY" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="RESOURCE_ID" columnType="INTEGER" />
+                 <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="RESOURCE_ID" nullable="FALSE" />                
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT_CHANGE_SET foreign key relation to RHQ_RESOURCE">
+                         ALTER TABLE RHQ_DRIFT_CHANGE_SET
+                         ADD CONSTRAINT RHQ_DCS_RESOURCE_ID_FK
+                         FOREIGN KEY (RESOURCE_ID)
+                         REFERENCES RHQ_RESOURCE (ID)
+                     </statement>
+                 </schema-directSQL>                
+                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_CONFIG_ID" columnType="INTEGER" />
+                 <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_CONFIG_ID" nullable="FALSE" />                
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT_CHANGE_SET foreign key relation to RHQ_DRIFT_CONFIG">
+                         ALTER TABLE RHQ_DRIFT_CHANGE_SET
+                         ADD CONSTRAINT RHQ_DCS_DRIFT_CONFIG_ID_FK
+                         FOREIGN KEY (DRIFT_CONFIG_ID)
+                         REFERENCES RHQ_DRIFT_CONFIG (ID)
+                     </statement>
+                 </schema-directSQL>
+
+                 <!-- RHQ_DRIFT -->
+                 <schema-createSequence name="RHQ_DRIFT_ID_SEQ" initial="10001" />
+                 <schema-directSQL>
+                     <statement desc="Creating table RHQ_DRIFT">
+                         CREATE TABLE RHQ_DRIFT (ID INTEGER PRIMARY KEY)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT" column="CTIME" columnType="LONG" />
+                 <schema-alterColumn table="RHQ_DRIFT" column="CTIME" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT" column="CATEGORY" columnType="VARCHAR2" precision="20" />
+                 <schema-alterColumn table="RHQ_DRIFT" column="CATEGORY" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT" column="PATH" columnType="VARCHAR2" precision="1024" />
+                 <schema-alterColumn table="RHQ_DRIFT" column="PATH" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT" column="DRIFT_CHANGE_SET_ID" columnType="INTEGER" />
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_CHANGE_SET">
+                         ALTER TABLE RHQ_DRIFT
+                         ADD CONSTRAINT RHQ_DRIFT_CHANGE_SET_ID_FK
+                         FOREIGN KEY (DRIFT_CHANGE_SET_ID)
+                         REFERENCES RHQ_DRIFT_CHANGE_SET (ID)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-alterColumn table="RHQ_DRIFT" column="DRIFT_CHANGE_SET_ID" nullable="FALSE" />
+                 <schema-addColumn   table="RHQ_DRIFT" column="OLD_DRIFT_FILE" columnType="VARCHAR2" precision="64" />
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_FILE (old drift file)">
+                         ALTER TABLE RHQ_DRIFT
+                         ADD CONSTRAINT RHQ_DRIFT_FILE_OLD_FK
+                         FOREIGN KEY (OLD_DRIFT_FILE)
+                         REFERENCES RHQ_DRIFT_FILE (HASH_ID)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-addColumn   table="RHQ_DRIFT" column="NEW_DRIFT_FILE" columnType="VARCHAR2" precision="64" />
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_FILE (new drift file)">
+                         ALTER TABLE RHQ_DRIFT
+                         ADD CONSTRAINT RHQ_DRIFT_FILE_NEW_FK
+                         FOREIGN KEY (NEW_DRIFT_FILE)
+                         REFERENCES RHQ_DRIFT_FILE (HASH_ID)
+                     </statement>
+                 </schema-directSQL>
+
+                 <!-- RHQ_DRIFT_TEMPLATE_MAP -->
+                 <schema-directSQL>
+                     <statement desc="Creating table RHQ_DRIFT_TEMPLATE_MAP">
+                         CREATE TABLE RHQ_DRIFT_TEMPLATE_MAP (
+                             RESOURCE_TYPE_ID INTEGER,
+                             CONFIG_TEMPLATE_ID INTEGER)
+                     </statement>
+                 </schema-directSQL>
+                 <schema-alterColumn table="RHQ_DRIFT_TEMPLATE_MAP" column="RESOURCE_TYPE_ID" nullable="FALSE"/>
+                 <schema-alterColumn table="RHQ_DRIFT_TEMPLATE_MAP" column="CONFIG_TEMPLATE_ID" nullable="FALSE"/>
+                 <schema-directSQL>
+                     <statement desc="Creating RHQ_DRIFT_TEMPLATE_MAP foreign key to RHQ_RESOURCE_TYPE">
+                         ALTER TABLE RHQ_DRIFT_TEMPLATE_MAP
+                         ADD CONSTRAINT RHQ_DTM_RESOURCE_TYPE_ID_FK
+                         FOREIGN KEY (RESOURCE_TYPE_ID)
+                         REFERENCES RHQ_RESOURCE_TYPE (ID)
+                     </statement>
+                     <statement desc="Creating RHQ_DRIFT_TEMPLATE_MAP foreign key to RHQ_CONFIG_TEMPLATE">
+                         ALTER TABLE RHQ_DRIFT_TEMPLATE_MAP
+                         ADD CONSTRAINT RHQ_DTM_CONFIG_TEMPLATE_ID_FK
+                         FOREIGN KEY (CONFIG_TEMPLATE_ID)
+                         REFERENCES RHQ_CONFIG_TEMPLATE (ID)
+                     </statement>
+                 </schema-directSQL>
+            </schemaSpec>
+
+            <schemaSpec version="2.112">
+                <schema-directSQL>
+                    <statement desc="Adding drift server plugin active plugin system configuration property">
+                        INSERT INTO rhq_system_config (id, property_key, property_value, default_property_value)
+                        VALUES (57, 'ACTIVE_DRIFT_PLUGIN', 'drift-jpa', 'drift-jpa')
+                    </statement>
+                </schema-directSQL>
+            </schemaSpec>
+
+            <schemaSpec version="2.113">
+                <schema-directSQL ignoreError="true">
+                    <statement desc="Creating RHQ_ALERT_CONDITION_LOG index on CONDITION_ID">
+                        CREATE INDEX RHQ_ALERT_COND_LOG_COND_IDX ON RHQ_ALERT_CONDITION_LOG (CONDITION_ID)
+                    </statement>
+                </schema-directSQL>
+                <schema-directSQL ignoreError="true">
+                    <statement desc="Creating RHQ_MEASUREMENT_SCHED index on RESOURCE_ID">
+                        CREATE INDEX RHQ_MEAS_SCHED_RESID_IDX ON RHQ_MEASUREMENT_SCHED (RESOURCE_ID)
+                    </statement>
+                </schema-directSQL>
+            </schemaSpec>
+
+            <schemaSpec version="2.114">
+                <schema-directSQL>
+                    <statement desc="Adding drift file purge system setting">
+                        INSERT INTO rhq_system_config (id, property_key, property_value, default_property_value)
+                        VALUES (58, 'DRIFT_FILE_PURGE', '2678400000', '2678400000')
+                    </statement>
+                </schema-directSQL>
+            </schemaSpec>
+
+<!-- RHQ 4.1 RELEASE uses DB Schema 2.114 -->
+
+<!-- RHQ 4.2 RELEASE uses DB Schema 2.114
+     Note, the 4.1 to 4.2 upgrade is broken because a 4.2 dbsetup actually creates a 2.115 schema. So,
+     for 4.2 dbs to upgrade to 4.3 the schema version must first be corrected and set the schema
+     version to 2.115. 
+-->
+
+            <schemaSpec version="2.115">                                                                
                 <!-- RHQ_DRIFT_DEF_TEMPLATE -->
                 <schema-createSequence name="RHQ_DRIFT_DEF_TEMPLATE_ID_SEQ" initial="10001" />
                 <schema-directSQL>
@@ -3466,81 +3774,66 @@
                 <schema-directSQL>
                     <statement desc="Creating RHQ_DRIFT_DEF_TEMPLATE foreign key to RHQ_RESOURCE_TYPE">
                         ALTER TABLE RHQ_DRIFT_DEF_TEMPLATE
-                        ADD CONSTRAINT RHQ_DTM_RESOURCE_TYPE_ID_FK
+                        ADD CONSTRAINT RHQ_DDT_RESOURCE_TYPE_ID_FK
                         FOREIGN KEY (RESOURCE_TYPE_ID)
                         REFERENCES RHQ_RESOURCE_TYPE (ID)
                     </statement>
                     <statement desc="Creating RHQ_DRIFT_DEF_TEMPLATE foreign key to RHQ_CONFIG">
                         ALTER TABLE RHQ_DRIFT_DEF_TEMPLATE
-                        ADD CONSTRAINT RHQ_DTM_CONFIG_ID_FK
+                        ADD CONSTRAINT RHQ_DDT_CONFIG_ID_FK
                         FOREIGN KEY (CONFIG_ID)
                         REFERENCES RHQ_CONFIG (ID)
                     </statement>
                 </schema-directSQL>
-                <schema-directSQL>
+                <schema-directSQL ignoreError="true">
                     <statement desc="Creating unique index on RESOURCE_TYPE_ID and NAME columns">
                         CREATE UNIQUE INDEX RHQ_TYPE_DEF_NAME ON RHQ_DRIFT_DEF_TEMPLATE ( RESOURCE_TYPE_ID, NAME )
                     </statement>
                 </schema-directSQL>
 
-                <!-- RHQ_DRIFT_FILE -->
-                <schema-directSQL>
-                    <statement targetDBVendor="postgresql" desc="Creating table RHQ_DRIFT_FILE">
-                        CREATE TABLE RHQ_DRIFT_FILE (HASH_ID character varying(64) PRIMARY KEY)
-                    </statement>
-                    <statement targetDBVendor="oracle" desc="Creating table RHQ_DRIFT_FILE">
-                        CREATE TABLE RHQ_DRIFT_FILE (HASH_ID VARCHAR2(64) PRIMARY KEY)
-                    </statement>
+                <!-- RHQ_DRIFT_CONFIG => RHQ_DRIFT_DEFINITION -->
+                <schema-directSQL>                
+                     <statement>
+                          ALTER TABLE RHQ_DRIFT_CONFIG RENAME TO RHQ_DRIFT_DEFINITION
+                     </statement>
+                     <statement targetDBVendor="postgresql">
+                          ALTER TABLE RHQ_DRIFT_CONFIG_ID_SEQ RENAME TO RHQ_DRIFT_DEFINITION_ID_SEQ
+                     </statement>
+                     <statement targetDBVendor="oracle">
+                          RENAME RHQ_DRIFT_CONFIG_ID_SEQ TO RHQ_DRIFT_DEFINITION_ID_SEQ
+                     </statement>                
                 </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_FILE" column="CTIME" columnType="LONG" />
-                <schema-alterColumn table="RHQ_DRIFT_FILE" column="CTIME" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_FILE" column="DATA" columnType="LARGEOBJECT" />
-                <schema-addColumn   table="RHQ_DRIFT_FILE" column="DATA_SIZE" columnType="LONG" />
-                <schema-addColumn   table="RHQ_DRIFT_FILE" column="STATUS" columnType="VARCHAR2" precision="20" />
-                <schema-alterColumn table="RHQ_DRIFT_FILE" column="STATUS" nullable="FALSE" />
 
-                <!-- RHQ_DRIFT_DEFINITION -->
-                <schema-createSequence name="RHQ_DRIFT_DEFINITION_ID_SEQ" initial="10001" />
-                <schema-directSQL>
-                    <statement desc="Creating table RHQ_DRIFT_DEFINITION">
-                        CREATE TABLE RHQ_DRIFT_DEFINITION (ID INTEGER PRIMARY KEY)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="CTIME" columnType="LONG" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="CTIME" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="NAME" columnType="VARCHAR2" precision="128" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="NAME" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="DESCRIPTION" columnType="VARCHAR2" precision="512" />
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="INTERVAL" columnType="LONG" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="INTERVAL" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="IS_ENABLED" columnType="BOOLEAN" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="IS_ENABLED" nullable="FALSE" />
+                <!--  add new columns -->
+                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="DESCRIPTION" columnType="VARCHAR2" precision="512" />                
                 <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="DRIFT_HANDLING_MODE" columnType="VARCHAR2" precision="20" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="DRIFT_HANDLING_MODE" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="CONFIG_ID" columnType="INTEGER" />
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="CONFIG_ID" nullable="FALSE" />
                 <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="IS_PINNED" columnType="BOOLEAN"/>
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="IS_PINNED" nullable="FALSE"/>
                 <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="IS_ATTACHED" columnType="BOOLEAN"/>
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="IS_ATTACHED" nullable="FALSE"/>
+                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="DRIFT_DEF_TEMPLATE_ID" columnType="INTEGER"/>
+           
+                <!--  initialize new required columns -->            
                 <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT_DEFINITION foreign key relation to RHQ_CONFIG">
-                        ALTER TABLE RHQ_DRIFT_DEFINITION
-                        ADD CONSTRAINT RHQ_DC_CONFIG_ID_FK
-                        FOREIGN KEY (CONFIG_ID)
-                        REFERENCES RHQ_CONFIG (ID)
+                    <statement targetDBVendor="postgresql" desc="RHQ_DRIFT_DEFINITION: set is_pinned column (false)">
+                        UPDATE RHQ_DRIFT_DEFINITION SET IS_PINNED = FALSE
                     </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="RESOURCE_ID" columnType="INTEGER" />
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT_DEFINITION foreign key relation to RHQ_RESOURCE">
-                        ALTER TABLE RHQ_DRIFT_DEFINITION
-                        ADD CONSTRAINT RHQ_DC_RESOURCE_ID_FK
-                        FOREIGN KEY (RESOURCE_ID)
-                        REFERENCES RHQ_RESOURCE (ID)
+                    <statement targetDBVendor="oracle" desc="RHQ_DRIFT_DEFINITION: set is_pinned column (false)">
+                        UPDATE RHQ_DRIFT_DEFINITION SET IS_PINNED = 0
                     </statement>
-                </schema-directSQL>
-                <schema-addColumn table="RHQ_DRIFT_DEFINITION" column="DRIFT_DEF_TEMPLATE_ID" columnType="INTEGER"/>
+                    <statement targetDBVendor="postgresql" desc="RHQ_DRIFT_DEFINITION: set is_attached column (false)">
+                        UPDATE RHQ_DRIFT_DEFINITION SET IS_ATTACHED = FALSE
+                    </statement>
+                    <statement targetDBVendor="oracle" desc="RHQ_DRIFT_DEFINITION: set is_attached column (false)">
+                        UPDATE RHQ_DRIFT_DEFINITION SET IS_ATTACHED = 0
+                    </statement>
+                    <statement desc="RHQ_DRIFT_DEFINITION: set drift_handling_mode column (normal)">
+                        UPDATE RHQ_DRIFT_DEFINITION SET DRIFT_HANDLING_MODE = 'normal'
+                    </statement>
+                </schema-directSQL>                
+                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="IS_PINNED" nullable="FALSE"/>
+                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="IS_ATTACHED" nullable="FALSE"/>   
+                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="DRIFT_HANDLING_MODE" nullable="FALSE" />
+
+                <!--  add new FK -->
                 <schema-directSQL>
                     <statement desc="Create RHQ_DRIFT_DEFINITION foreign key to RHQ_DRIFT_DEF_TEMPLATE">
                         ALTER TABLE RHQ_DRIFT_DEFINITION
@@ -3550,6 +3843,7 @@
                     </statement>
                 </schema-directSQL>
 
+
                 <!-- RHQ_DRIFT_SET -->
                 <schema-createSequence name="RHQ_DRIFT_SET_ID_SEQ" initial="10001" />
                 <schema-directSQL>
@@ -3558,40 +3852,13 @@
                     </statement>
                 </schema-directSQL>
 
+
                 <!-- RHQ_DRIFT_CHANGE_SET -->
-                <schema-createSequence name="RHQ_DRIFT_CHANGE_SET_ID_SEQ" initial="10001" />
-                <schema-directSQL>
-                    <statement desc="Creating table RHQ_DRIFT_CHANGE_SET">
-                        CREATE TABLE RHQ_DRIFT_CHANGE_SET (ID INTEGER PRIMARY KEY)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="CTIME" columnType="LONG" />
-                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="CTIME" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="VERSION" columnType="INTEGER" />
-                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="VERSION" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="CATEGORY" columnType="VARCHAR2" precision="20" />
-                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="CATEGORY" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="RESOURCE_ID" columnType="INTEGER" />
+                <!-- Resource column is now nullable -->
+                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="RESOURCE_ID" nullable="TRUE" />
+                
+                <!--  Add new drift_set column with FK -->
                 <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_SET_ID" columnType="INTEGER"/>
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT_CHANGE_SET foreign key relation to RHQ_RESOURCE">
-                        ALTER TABLE RHQ_DRIFT_CHANGE_SET
-                        ADD CONSTRAINT RHQ_DCS_RESOURCE_ID_FK
-                        FOREIGN KEY (RESOURCE_ID)
-                        REFERENCES RHQ_RESOURCE (ID)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_DEFINITION_ID" columnType="INTEGER" />
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT_CHANGE_SET foreign key relation to RHQ_DRIFT_DEFINITION">
-                        ALTER TABLE RHQ_DRIFT_CHANGE_SET
-                        ADD CONSTRAINT RHQ_DCS_DRIFT_DEF_ID_FK
-                        FOREIGN KEY (DRIFT_DEFINITION_ID)
-                        REFERENCES RHQ_DRIFT_DEFINITION (ID)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_HANDLING_MODE" columnType="VARCHAR2" precision="20" />
-                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_HANDLING_MODE" nullable="FALSE" />
                 <schema-directSQL>
                     <statement desc="Creating RHQ_DRIFT_CHANGE_SET foreign key relation to RHQ_DRIFT_SET">
                         ALTER TABLE RHQ_DRIFT_CHANGE_SET
@@ -3599,52 +3866,40 @@
                         FOREIGN KEY (DRIFT_SET_ID)
                         REFERENCES RHQ_DRIFT_SET (ID)
                     </statement>
+                </schema-directSQL>                
+
+                
+                <!--  Rename column DRIFT_CONFIG_ID to DRIFT_DEFINITION_ID -->
+                <schema-directSQL>
+                    <statement desc="Renaming RHQ_DRIFT_CHANGE_SET.DRIFT_CONFIG_ID column to DRIFT_DEFINITION_ID">
+                        ALTER TABLE RHQ_DRIFT_CHANGE_SET
+                        RENAME COLUMN DRIFT_CONFIG_ID
+                        TO DRIFT_DEFINITION_ID
+                    </statement>
                 </schema-directSQL>
 
+                <!--  Add new drift_handling_mode column -->
+                <schema-addColumn   table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_HANDLING_MODE" columnType="VARCHAR2" precision="20" />
+                <schema-directSQL>
+                    <statement desc="RHQ_DRIFT_CHANGE_SET: set drift_handling_mode column (normal)">
+                        UPDATE RHQ_DRIFT_CHANGE_SET SET DRIFT_HANDLING_MODE = 'normal'
+                    </statement>
+                </schema-directSQL>                                
+                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_HANDLING_MODE" nullable="FALSE" />
+
+
                 <!-- RHQ_DRIFT -->
-                <schema-createSequence name="RHQ_DRIFT_ID_SEQ" initial="10001" />
-                <schema-directSQL>
-                    <statement desc="Creating table RHQ_DRIFT">
-                        CREATE TABLE RHQ_DRIFT (ID INTEGER PRIMARY KEY)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT" column="CTIME" columnType="LONG" />
-                <schema-alterColumn table="RHQ_DRIFT" column="CTIME" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT" column="CATEGORY" columnType="VARCHAR2" precision="20" />
-                <schema-alterColumn table="RHQ_DRIFT" column="CATEGORY" nullable="FALSE" />
-                <schema-addColumn   table="RHQ_DRIFT" column="PATH" columnType="VARCHAR2" precision="1024" />
-                <schema-alterColumn table="RHQ_DRIFT" column="PATH" nullable="FALSE" />
+                <!--  Add new path_directory column -->                
                 <schema-addColumn   table="RHQ_DRIFT" column="PATH_DIRECTORY" columnType="VARCHAR2" precision="1024" />
-                <schema-alterColumn table="RHQ_DRIFT" column="PATH_DIRECTORY" nullable="FALSE" />                
-                <schema-addColumn   table="RHQ_DRIFT" column="DRIFT_CHANGE_SET_ID" columnType="INTEGER" />
-                <schema-alterColumn table="RHQ_DRIFT" column="DRIFT_CHANGE_SET_ID" nullable="FALSE" />                
+                
+                <!-- Set the new path_directory column using the current path column values -->
+                <schema-javaTask className="DriftPathDirectoryDatabaseUpgradeTask" />                
+
+                <!-- Now it is safe to set the new path_directory column not null -->
+                <schema-alterColumn table="RHQ_DRIFT" column="PATH_DIRECTORY" nullable="FALSE" />      
+                          
+                <!--  add new drift_set_id column and FK -->
                 <schema-addColumn   table="RHQ_DRIFT" column="DRIFT_SET_ID" columnType="INTEGER"/>
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_CHANGE_SET">
-                        ALTER TABLE RHQ_DRIFT
-                        ADD CONSTRAINT RHQ_DRIFT_CHANGE_SET_ID_FK
-                        FOREIGN KEY (DRIFT_CHANGE_SET_ID)
-                        REFERENCES RHQ_DRIFT_CHANGE_SET (ID)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT" column="OLD_DRIFT_FILE" columnType="VARCHAR2" precision="64" />
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_FILE (old drift file)">
-                        ALTER TABLE RHQ_DRIFT
-                        ADD CONSTRAINT RHQ_DRIFT_FILE_OLD_FK
-                        FOREIGN KEY (OLD_DRIFT_FILE)
-                        REFERENCES RHQ_DRIFT_FILE (HASH_ID)
-                    </statement>
-                </schema-directSQL>
-                <schema-addColumn   table="RHQ_DRIFT" column="NEW_DRIFT_FILE" columnType="VARCHAR2" precision="64" />
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_FILE (new drift file)">
-                        ALTER TABLE RHQ_DRIFT
-                        ADD CONSTRAINT RHQ_DRIFT_FILE_NEW_FK
-                        FOREIGN KEY (NEW_DRIFT_FILE)
-                        REFERENCES RHQ_DRIFT_FILE (HASH_ID)
-                    </statement>
-                </schema-directSQL>
                 <schema-directSQL>
                     <statement desc="Creating RHQ_DRIFT foreign key relation to RHQ_DRIFT_SET">
                         ALTER TABLE RHQ_DRIFT
@@ -3653,47 +3908,55 @@
                         REFERENCES RHQ_DRIFT_SET (ID)
                     </statement>
                 </schema-directSQL>
+
+                <!-- Morph rhq_drift_template_map rows into rhq_drift_def_template rows. The rhq_drift_template_map
+                     table is obsolete. -->
+                <schema-javaTask className="DriftTemplateMapDatabaseUpgradeTask" />                
+
             </schemaSpec>
 
-            <schemaSpec version="2.112">
+<!-- RHQ 4.2 RELEASE uses DB Schema 2.114, which is incorrect, it should have been 2.115. So, for the
+     upgrade to work for an RHQ 4.2 install the schema version must be set to 2.115 prior to the upgrade.
+     
+     The 4.2 upgrade should start with 2.116.
+-->
+            <schemaSpec version="2.116">
+                <!-- RHQ_DRIFT_DEFINITION changes -->                                
+                <schema-addColumn   table="RHQ_DRIFT_DEFINITION" column="COMPLIANCE_STATUS" columnType="INTEGER"/>
                 <schema-directSQL>
-                    <statement desc="Adding drift server plugin active plugin system configuration property">
-                        INSERT INTO rhq_system_config (id, property_key, property_value, default_property_value)
-                        VALUES (57, 'ACTIVE_DRIFT_PLUGIN', 'drift-jpa', 'drift-jpa')
-                    </statement>
-                </schema-directSQL>
-            </schemaSpec>
-
-            <schemaSpec version="2.113">
-                <schema-directSQL>
-                    <statement desc="Creating RHQ_ALERT_CONDITION_LOG index on CONDITION_ID">
-                        CREATE INDEX RHQ_ALERT_COND_LOG_COND_IDX ON RHQ_ALERT_CONDITION_LOG (CONDITION_ID)
-                    </statement>
-                    <statement desc="Creating RHQ_MEASUREMENT_SCHED index on RESOURCE_ID">
-                        CREATE INDEX RHQ_MEAS_SCHED_RESID_IDX ON RHQ_MEASUREMENT_SCHED (RESOURCE_ID)
-                    </statement>
-                </schema-directSQL>
-            </schemaSpec>
-
-            <schemaSpec version="2.114">
-                <schema-directSQL>
-                    <statement desc="Adding drift file purge system setting">
-                        INSERT INTO rhq_system_config (id, property_key, property_value, default_property_value)
-                        VALUES (58, 'DRIFT_FILE_PURGE', '2678400000', '2678400000')
-                    </statement>
-                </schema-directSQL>
-            </schemaSpec>
-
-            <schemaSpec version="2.115">
-                <schema-addColumn table="RHQ_DRIFT_DEFINITION" column="COMPLIANCE_STATUS" columnType="INTEGER"/>
-                <schema-directSQL>
-                    <statement desc="RHQ_DRIFT_DEFINITION: set compliance_status column for existing definitions">
+                    <statement desc="RHQ_DRIFT_DEFINITION: set compliance_status column (in compliance)">
                         UPDATE RHQ_DRIFT_DEFINITION SET COMPLIANCE_STATUS = 0
                     </statement>
                 </schema-directSQL>
-                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="COMPLIANCE_STATUS" nullable="FALSE"/>
+                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="COMPLIANCE_STATUS" nullable="FALSE"/>                
+                
+                <schema-alterColumn table="RHQ_DRIFT_DEFINITION" column="NAME" columnType="VARCHAR2" precision="512" />
+                
+                
+                <!-- RHQ_PRD_VER changes -->                
+                <!-- Increase the max length of a product version from 50 to 100. -->
+                <schema-alterColumn table="RHQ_PRD_VER" column="VERSION" columnType="VARCHAR2" precision="100" />
             </schemaSpec>
 
+<!-- JON 3.0 RELEASE uses DB Schema 2.116 -->
+            
+            <schemaSpec version="2.117">
+                <!-- Remove an obsolete drift table that may be hanging around -->
+                <schema-dropTable table="RHQ_DRIFT_TEMPLATE_MAP" />
+                
+                <!-- Remove an unwanted null consraint -->
+                <schema-alterColumn table="RHQ_DRIFT_CHANGE_SET" column="DRIFT_DEFINITION_ID" nullable="TRUE" />                
+            </schemaSpec>
+
+            <schemaSpec version="2.118">
+                <!-- Correct an earlier upgrade issue where 'All Resources Role' was granted MANAGE_REPOSITORIES. -->
+                <schema-directSQL>
+                    <statement>
+                        DELETE FROM RHQ_PERMISSION WHERE role_id = 2 AND operation = 15  
+                    </statement>
+                </schema-directSQL>
+            </schemaSpec>
+            
         </dbupgrade>
     </target>
 </project>

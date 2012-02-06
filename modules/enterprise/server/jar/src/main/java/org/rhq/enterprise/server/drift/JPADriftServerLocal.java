@@ -21,9 +21,11 @@ package org.rhq.enterprise.server.drift;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.ejb.Local;
 
+import org.rhq.common.drift.Headers;
 import org.rhq.core.domain.auth.Subject;
 import org.rhq.core.domain.criteria.DriftChangeSetCriteria;
 import org.rhq.core.domain.criteria.DriftCriteria;
@@ -103,6 +105,18 @@ public interface JPADriftServerLocal {
     DriftChangeSetSummary storeChangeSet(Subject subject, int resourceId, File changeSetZip) throws Exception;
 
     /**
+     * For transactioning purposes only, part of storeChangeSet impl. Not to be exposed outside of local interface. 
+     */
+    DriftChangeSetSummary storeChangeSetInNewTransaction(Subject subject, int resourceId, File changeSetZip,
+        List<JPADriftFile> driftFilesToRequest, Headers[] headers) throws Exception;
+
+    /**
+     * For transactioning purposes only, part of storeChangeSet impl. Not to be exposed outside of local interface. 
+     */
+    void ackChangeSetInNewTransaction(Subject subject, int resourceId, Headers headers,
+        List<JPADriftFile> driftFilesToRequest) throws Exception;
+
+    /**
      * This method stores the provided drift files. The files should correspond to requested drift files.
      * The unzipped files will have their sha256 generated. Those not corresponding to needed content will
      * be logged and ignored.
@@ -131,4 +145,6 @@ public interface JPADriftServerLocal {
     int purgeOrphanedDriftFiles(Subject subject, long purgeMillis);
 
     String getDriftFileBits(String hash);
+
+    byte[] getDriftFileAsByteArray(String hash);
 }

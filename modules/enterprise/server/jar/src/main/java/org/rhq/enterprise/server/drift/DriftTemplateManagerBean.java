@@ -19,26 +19,11 @@
 
 package org.rhq.enterprise.server.drift;
 
-import static javax.ejb.TransactionAttributeType.NEVER;
-import static org.rhq.core.domain.common.EntityContext.forResource;
-import static org.rhq.core.domain.drift.DriftChangeSetCategory.COVERAGE;
-import static org.rhq.core.domain.drift.DriftConfigurationDefinition.DriftHandlingMode.normal;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.rhq.core.domain.auth.Subject;
 import org.rhq.core.domain.authz.Permission;
 import org.rhq.core.domain.criteria.DriftDefinitionCriteria;
 import org.rhq.core.domain.criteria.DriftDefinitionTemplateCriteria;
-import org.rhq.core.domain.drift.DriftDefinition;
-import org.rhq.core.domain.drift.DriftDefinitionComparator;
-import org.rhq.core.domain.drift.DriftDefinitionTemplate;
-import org.rhq.core.domain.drift.DriftSnapshot;
-import org.rhq.core.domain.drift.DriftSnapshotRequest;
+import org.rhq.core.domain.drift.*;
 import org.rhq.core.domain.drift.dto.DriftChangeSetDTO;
 import org.rhq.core.domain.resource.ResourceType;
 import org.rhq.core.domain.util.PageList;
@@ -48,6 +33,17 @@ import org.rhq.enterprise.server.resource.ResourceTypeManagerLocal;
 import org.rhq.enterprise.server.resource.ResourceTypeNotFoundException;
 import org.rhq.enterprise.server.util.CriteriaQueryGenerator;
 import org.rhq.enterprise.server.util.CriteriaQueryRunner;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import static javax.ejb.TransactionAttributeType.NEVER;
+import static org.rhq.core.domain.common.EntityContext.forResource;
+import static org.rhq.core.domain.drift.DriftChangeSetCategory.COVERAGE;
+import static org.rhq.core.domain.drift.DriftConfigurationDefinition.DriftHandlingMode.normal;
 
 @Stateless
 public class DriftTemplateManagerBean implements DriftTemplateManagerLocal, DriftTemplateManagerRemote {
@@ -81,12 +77,22 @@ public class DriftTemplateManagerBean implements DriftTemplateManagerLocal, Drif
         DriftDefinition definition) {
 
         try {
+            // before we do anything, validate certain field values to prevent downstream errors            
+            if (isUserDefined) {
+                DriftManagerBean.validateDriftDefinition(definition);
+            }
+
             ResourceType resourceType = resourceTypeMgr.getResourceTypeById(subject, resourceTypeId);
             DriftDefinitionTemplate template = new DriftDefinitionTemplate();
             template.setName(definition.getName());
             template.setDescription(definition.getDescription());
             template.setUserDefined(isUserDefined);
             template.setTemplateDefinition(definition);
+
+            if (isDuplicateName(resourceType, template)) {
+                throw new IllegalArgumentException("Drift definition template name must be unique. A template named "
+                    + "[" + template.getName() + "] already exists for " + resourceType);
+            }
 
             resourceType.addDriftDefinitionTemplate(template);
             entityMgr.persist(template);
@@ -95,6 +101,15 @@ public class DriftTemplateManagerBean implements DriftTemplateManagerLocal, Drif
         } catch (ResourceTypeNotFoundException e) {
             throw new RuntimeException("Failed to create template", e);
         }
+    }
+
+    private boolean isDuplicateName(ResourceType resourceType, DriftDefinitionTemplate newTemplate) {
+        for (DriftDefinitionTemplate template : resourceType.getDriftDefinitionTemplates()) {
+            if (template.getName().equals(newTemplate.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @RequiredPermission(Permission.MANAGE_SETTINGS)
@@ -151,8 +166,8 @@ public class DriftTemplateManagerBean implements DriftTemplateManagerLocal, Drif
         DriftDefinitionTemplate template = entityMgr.find(DriftDefinitionTemplate.class, templateId);
         for (DriftDefinition defintion : template.getDriftDefinitions()) {
             if (defintion.isAttached()) {
-                driftMgr.deleteDriftDefinition(subject, forResource(defintion.getResource().getId()),
-                    defintion.getName());
+                driftMgr.deleteDriftDefinition(subject, forResource(defintion.getResource().getId()), defintion
+                    .getName());
             } else {
                 defintion.setTemplate(null);
             }
@@ -162,30 +177,39 @@ public class DriftTemplateManagerBean implements DriftTemplateManagerLocal, Drif
 
     @RequiredPermission(Permission.MANAGE_SETTINGS)
     @Override
-    public void updateTemplate(Subject subject, DriftDefinitionTemplate template) {
-        DriftDefinitionTemplate oldTemplate = entityMgr.find(DriftDefinitionTemplate.class, template.getId());
+    public void updateTemplate(Subject subject, DriftDefinitionTemplate updatedTemplate) {
 
-        if (!oldTemplate.getName().equals(template.getName())) {
+        DriftDefinitionTemplate template = entityMgr.find(DriftDefinitionTemplate.class, updatedTemplate.getId());
+
+        if (null == template) {
+            throw new IllegalArgumentException("Template with id [" + updatedTemplate.getId() + "] not found");
+        }
+        if (!template.isUserDefined()) {
+            throw new IllegalArgumentException("Plugin-defined templates cannot be be modified");
+        }
+        if (!template.getName().equals(updatedTemplate.getName())) {
             throw new IllegalArgumentException("The template's name cannot be modified");
         }
-
         DriftDefinitionComparator comparator = new DriftDefinitionComparator(
-                DriftDefinitionComparator.CompareMode.ONLY_DIRECTORY_SPECIFICATIONS);
-        if (comparator.compare(oldTemplate.getTemplateDefinition(), template.getTemplateDefinition()) != 0) {
+            DriftDefinitionComparator.CompareMode.ONLY_DIRECTORY_SPECIFICATIONS);
+        if (comparator.compare(template.getTemplateDefinition(), updatedTemplate.getTemplateDefinition()) != 0) {
             throw new IllegalArgumentException("The template's base directory and filters cannot be modified");
         }
 
-        DriftDefinitionTemplate updatedTemplate = entityMgr.merge(template);
-        DriftDefinition templateDef = updatedTemplate.getTemplateDefinition();
+        template.setTemplateDefinition(updatedTemplate.getTemplateDefinition());
+        template = entityMgr.merge(template);
+        DriftDefinition templateDef = template.getTemplateDefinition();
 
-        for (DriftDefinition resourceDef : updatedTemplate.getDriftDefinitions()) {
-            if (resourceDef.isAttached()) {
-                resourceDef.setInterval(templateDef.getInterval());
-                resourceDef.setDriftHandlingMode(templateDef.getDriftHandlingMode());
-                resourceDef.setEnabled(templateDef.isEnabled());
+        for (DriftDefinition resourceDef : template.getDriftDefinitions()) {
+            DriftDefinition driftDef = entityMgr.find(DriftDefinition.class, resourceDef.getId());
+            if (driftDef.isAttached()) {
+                driftDef.setInterval(templateDef.getInterval());
+                driftDef.setDriftHandlingMode(templateDef.getDriftHandlingMode());
+                driftDef.setEnabled(templateDef.isEnabled());
 
-                driftMgr.updateDriftDefinition(subject, forResource(resourceDef.getResource().getId()), resourceDef);
+                driftMgr.updateDriftDefinition(subject, forResource(driftDef.getResource().getId()), driftDef);
             }
         }
     }
+
 }

@@ -18,68 +18,25 @@
  */
 package org.rhq.enterprise.server.drift;
 
-import static java.util.Arrays.asList;
-import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import static org.rhq.core.domain.drift.DriftChangeSetCategory.COVERAGE;
-import static org.rhq.core.domain.drift.DriftComplianceStatus.IN_COMPLIANCE;
-import static org.rhq.core.domain.drift.DriftComplianceStatus.OUT_OF_COMPLIANCE_DRIFT;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
+import difflib.DiffUtils;
+import difflib.Patch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
-
 import org.jboss.remoting.CannotConnectException;
-
 import org.rhq.core.clientapi.agent.drift.DriftAgentService;
 import org.rhq.core.domain.auth.Subject;
 import org.rhq.core.domain.common.EntityContext;
-import org.rhq.core.domain.criteria.DriftChangeSetCriteria;
-import org.rhq.core.domain.criteria.DriftCriteria;
-import org.rhq.core.domain.criteria.DriftDefinitionCriteria;
-import org.rhq.core.domain.criteria.GenericDriftChangeSetCriteria;
-import org.rhq.core.domain.criteria.GenericDriftCriteria;
-import org.rhq.core.domain.drift.Drift;
-import org.rhq.core.domain.drift.DriftCategory;
-import org.rhq.core.domain.drift.DriftChangeSet;
-import org.rhq.core.domain.drift.DriftChangeSetCategory;
-import org.rhq.core.domain.drift.DriftComplianceStatus;
-import org.rhq.core.domain.drift.DriftComposite;
-import org.rhq.core.domain.drift.DriftConfigurationDefinition;
+import org.rhq.core.domain.criteria.*;
+import org.rhq.core.domain.drift.*;
 import org.rhq.core.domain.drift.DriftConfigurationDefinition.DriftHandlingMode;
-import org.rhq.core.domain.drift.DriftDefinition;
-import org.rhq.core.domain.drift.DriftDefinitionComparator;
+import org.rhq.core.domain.drift.DriftDefinition.BaseDirectory;
 import org.rhq.core.domain.drift.DriftDefinitionComparator.CompareMode;
-import org.rhq.core.domain.drift.DriftDefinitionComposite;
-import org.rhq.core.domain.drift.DriftDefinitionTemplate;
-import org.rhq.core.domain.drift.DriftDetails;
-import org.rhq.core.domain.drift.DriftFile;
-import org.rhq.core.domain.drift.DriftSnapshot;
-import org.rhq.core.domain.drift.DriftSnapshotRequest;
-import org.rhq.core.domain.drift.FileDiffReport;
 import org.rhq.core.domain.drift.dto.DriftChangeSetDTO;
 import org.rhq.core.domain.drift.dto.DriftDTO;
 import org.rhq.core.domain.drift.dto.DriftFileDTO;
 import org.rhq.core.domain.resource.Resource;
+import org.rhq.core.domain.resource.ResourceType;
 import org.rhq.core.domain.util.PageControl;
 import org.rhq.core.domain.util.PageList;
 import org.rhq.core.domain.util.PageOrdering;
@@ -98,8 +55,27 @@ import org.rhq.enterprise.server.util.CriteriaQueryGenerator;
 import org.rhq.enterprise.server.util.CriteriaQueryRunner;
 import org.rhq.enterprise.server.util.LookupUtil;
 
-import difflib.DiffUtils;
-import difflib.Patch;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.jms.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
+import static javax.ejb.TransactionAttributeType.NOT_SUPPORTED;
+import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static org.rhq.core.domain.drift.DriftChangeSetCategory.COVERAGE;
+import static org.rhq.core.domain.drift.DriftComplianceStatus.IN_COMPLIANCE;
+import static org.rhq.core.domain.drift.DriftComplianceStatus.OUT_OF_COMPLIANCE_DRIFT;
+
+import java.lang.IllegalStateException;
 
 /**
  * The SLSB supporting Drift management to clients.  
@@ -116,48 +92,6 @@ import difflib.Patch;
  */
 @Stateless
 public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
-
-    private static Set<String> binaryFileTypes = new HashSet<String>();
-
-    static {
-        binaryFileTypes.add("jar");
-        binaryFileTypes.add("war");
-        binaryFileTypes.add("ear");
-        binaryFileTypes.add("sar"); // jboss service
-        binaryFileTypes.add("har"); // hibernate archive
-        binaryFileTypes.add("rar"); // resource adapter
-        binaryFileTypes.add("wsr"); // jboss web service archive
-        binaryFileTypes.add("zip");
-        binaryFileTypes.add("tar");
-        binaryFileTypes.add("bz2");
-        binaryFileTypes.add("gz");
-        binaryFileTypes.add("rpm");
-        binaryFileTypes.add("so");
-        binaryFileTypes.add("dll");
-        binaryFileTypes.add("exe");
-        binaryFileTypes.add("jpg");
-        binaryFileTypes.add("png");
-        binaryFileTypes.add("jpeg");
-        binaryFileTypes.add("gif");
-        binaryFileTypes.add("pdf");
-        binaryFileTypes.add("swf");
-        binaryFileTypes.add("bpm");
-        binaryFileTypes.add("tiff");
-        binaryFileTypes.add("svg");
-        binaryFileTypes.add("doc");
-        binaryFileTypes.add("mp3");
-        binaryFileTypes.add("wav");
-        binaryFileTypes.add("m4a");
-        binaryFileTypes.add("mov");
-        binaryFileTypes.add("mpeg");
-        binaryFileTypes.add("avi");
-        binaryFileTypes.add("mp4");
-        binaryFileTypes.add("wmv");
-        binaryFileTypes.add("deb");
-        binaryFileTypes.add("sit");
-        binaryFileTypes.add("iso");
-        binaryFileTypes.add("dmg");
-    }
 
     // TODO Should security checks be handled here instead of delegating to the drift plugin?
     // Currently any security checks that need to be performed are delegated to the plugin.
@@ -534,8 +468,8 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
         PageList<DriftDefinition> definitions = findDriftDefinitionsByCriteria(subject, criteria);
 
         if (definitions.isEmpty()) {
-            log.warn("Could not find drift definition for [resourceId: " + resourceId + ", driftDefinitionName: " +
-                summary.getDriftDefinitionName() + "]. Will not be able check compliance for thiis drift definition");
+            log.warn("Could not find drift definition for [resourceId: " + resourceId + ", driftDefinitionName: "
+                + summary.getDriftDefinitionName() + "]. Will not be able check compliance for thiis drift definition");
         } else {
             updateCompliance(subject, definitions.get(0), summary);
         }
@@ -600,8 +534,15 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
     @TransactionAttribute(NOT_SUPPORTED)
     public void pinSnapshot(Subject subject, int driftDefId, int snapshotVersion) {
         DriftDefinition driftDef = driftManager.getDriftDefinition(subject, driftDefId);
+
+        if (driftDef.getTemplate() != null && driftDef.getTemplate().isPinned()) {
+            throw new IllegalArgumentException(("Cannot repin a definition that has been created from a pinned "
+                + "template."));
+        }
+
         driftDef.setPinned(true);
         driftManager.updateDriftDefinition(subject, driftDef);
+        driftDef.getResource().setAgentSynchronizationNeeded();
 
         DriftSnapshotRequest snapshotRequest = new DriftSnapshotRequest(driftDefId, snapshotVersion);
         DriftSnapshot snapshot = getSnapshot(subject, snapshotRequest);
@@ -621,9 +562,15 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
             throw new RuntimeException("Failed to pin snapshot", e);
         }
 
-        AgentClient agent = agentManager.getAgentClient(subject, driftDef.getResource().getId());
-        DriftAgentService driftService = agent.getDriftAgentService();
-        driftService.pinSnapshot(driftDef.getResource().getId(), driftDef.getName(), snapshot);
+        try {
+            AgentClient agent = agentManager.getAgentClient(subjectManager.getOverlord(), driftDef.getResource()
+                .getId());
+            DriftAgentService driftService = agent.getDriftAgentService();
+            driftService.pinSnapshot(driftDef.getResource().getId(), driftDef.getName(), snapshot);
+        } catch (Exception e) {
+            log.warn("Unable to notify agent that DriftDefinition[driftDefinitionId: " + driftDefId
+                + ", driftDefinitionName: " + driftDef.getName() + "] has been pinned. The agent may be down.", e);
+        }
     }
 
     @TransactionAttribute(NOT_SUPPORTED)
@@ -673,6 +620,13 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
         log.debug("Retrieving drift file content for " + hash);
         DriftServerPluginFacet driftServerPlugin = getServerPlugin();
         return driftServerPlugin.getDriftFileBits(subject, hash);
+    }
+
+    @Override
+    public byte[] getDriftFileAsByteArray(Subject subject, String hash) {
+        log.debug("Retrieving drift file content for " + hash);
+        DriftServerPluginFacet driftServerPlugin = getServerPlugin();
+        return driftServerPlugin.getDriftFileAsByteArray(subject, hash);
     }
 
     @Override
@@ -736,12 +690,8 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
 
     @Override
     public void updateDriftDefinition(Subject subject, EntityContext entityContext, DriftDefinition driftDef) {
-
-        // before we do anything, make sure the drift def name is valid
-        if (!driftDef.getName().matches(DriftConfigurationDefinition.PROP_NAME_REGEX_PATTERN)) {
-            throw new IllegalArgumentException("Drift definition name contains invalid characters: "
-                + driftDef.getName());
-        }
+        // before we do anything, validate certain field values to prevent downstream errors
+        validateDriftDefinition(driftDef);
 
         switch (entityContext.getType()) {
         case Resource:
@@ -749,6 +699,11 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
             Resource resource = entityManager.find(Resource.class, resourceId);
             if (null == resource) {
                 throw new IllegalArgumentException("Entity not found [" + entityContext + "]");
+            }
+
+            if (!isDriftMgmtSupported(resource)) {
+                throw new IllegalArgumentException("Cannot create drift definition. The resource type " +
+                        resource.getResourceType() + " does not support drift management");
             }
 
             // Update or add the driftDef as necessary
@@ -769,12 +724,13 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
                         break;
                     } else {
                         throw new IllegalArgumentException(
-                            "You cannot change an existing drift definition's base directory or includes/excludes filters.");
+                            "A new definition must have a unique name. An existing definition cannot update it's base directory or includes/excludes filters.");
                     }
                 }
             }
 
             if (!isUpdated) {
+                validateTemplateForNewDef(driftDef, resource);
                 resource.addDriftDefinition(driftDef);
                 // We call persist here because if this definition is created
                 // from a pinned template, then we need to generate the initial
@@ -817,25 +773,67 @@ public class DriftManagerBean implements DriftManagerLocal, DriftManagerRemote {
         }
     }
 
-    private void updateCompliance(DriftDefinition updatedDef) {
-        DriftDefinition currentDef = entityManager.find(DriftDefinition.class, updatedDef.getId());
+    public static void validateDriftDefinition(DriftDefinition driftDef) {
+        if (!driftDef.getName().matches(DriftConfigurationDefinition.PROP_NAME_REGEX_PATTERN)) {
+            throw new IllegalArgumentException("Drift definition name contains invalid characters: "
+                + driftDef.getName());
+        }
+        BaseDirectory baseDir = driftDef.getBasedir();
+        if (null == baseDir
+            || !baseDir.getValueName().matches(DriftConfigurationDefinition.PROP_BASEDIR_PATH_REGEX_PATTERN)) {
+            throw new IllegalArgumentException(
+                "Drift definition base directory is null or contains invalid characters: " + baseDir);
+        }
+        List<List<Filter>> filtersList = new ArrayList<List<Filter>>(2);
+        filtersList.add(driftDef.getIncludes());
+        filtersList.add(driftDef.getExcludes());
+        for (List<Filter> filterList : filtersList) {
+            for (Filter filter : filterList) {
+                String path = (null == filter.getPath()) ? null : filter.getPath().trim();
+                if (null != path && !path.isEmpty()
+                    && !path.matches(DriftConfigurationDefinition.PROP_FILTER_PATH_REGEX_PATTERN)) {
+                    throw new IllegalArgumentException("Drift definition filter path contains invalid characters: "
+                        + path);
+                }
+                String pattern = (null == filter.getPattern()) ? null : filter.getPattern().trim();
+                if (null != pattern && !pattern.isEmpty()
+                    && !pattern.matches(DriftConfigurationDefinition.PROP_FILTER_PATTERN_REGEX_PATTERN)) {
+                    throw new IllegalArgumentException("Drift definition filter pattern contains invalid characters: "
+                        + pattern);
+                }
+            }
+        }
+    }
 
-        // check to see if we are unpinning the definition
-        if (currentDef.isPinned() && !updatedDef.isPinned()) {
-            updatedDef.setComplianceStatus(DriftComplianceStatus.IN_COMPLIANCE);
+    private boolean isDriftMgmtSupported(Resource resource) {
+        ResourceType type = resource.getResourceType();
+        return type.getDriftDefinitionTemplates() != null && !type.getDriftDefinitionTemplates().isEmpty();
+    }
+
+    private void validateTemplateForNewDef(DriftDefinition driftDef, Resource resource) {
+        if (driftDef.getTemplate() == null) {
+            return;
+        }
+
+        DriftDefinitionTemplate template = entityManager.find(DriftDefinitionTemplate.class,
+                driftDef.getTemplate().getId());
+
+        if (template == null) {
+            throw new IllegalArgumentException("Cannot create drift definition with template " +
+                    DriftDefinitionTemplate.class.getSimpleName() + "[" + driftDef.getTemplate().getName() +
+                    "] that has not been saved");
+        }
+
+        if (!template.getResourceType().equals(resource.getResourceType())) {
+            throw new IllegalArgumentException("Cannot create drift definition with template " +
+                    DriftDefinitionTemplate.class.getSimpleName() + "[" + driftDef.getTemplate().getName() +
+                    "] that is from a different resource type, " + template.getResourceType());
         }
     }
 
     @Override
     public boolean isBinaryFile(Subject subject, Drift<?, ?> drift) {
-        String path = drift.getPath();
-        int index = path.lastIndexOf('.');
-
-        if (index == -1 || index == path.length() - 1) {
-            return false;
-        }
-
-        return binaryFileTypes.contains(path.substring(index + 1, path.length()));
+        return DriftUtil.isBinaryFile(drift);
     }
 
     @Override

@@ -24,9 +24,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.DynamicForm;
 
+import org.rhq.core.domain.common.ProductInfo;
 import org.rhq.core.domain.configuration.Configuration;
 import org.rhq.core.domain.configuration.definition.ConfigurationDefinition;
+import org.rhq.enterprise.gui.coregui.client.CoreGUI;
 import org.rhq.enterprise.gui.coregui.client.components.configuration.ConfigurationEditor;
+import org.rhq.enterprise.gui.coregui.client.components.configuration.PropertyValueChangeEvent;
+import org.rhq.enterprise.gui.coregui.client.components.configuration.PropertyValueChangeListener;
 import org.rhq.enterprise.gui.coregui.client.components.form.DurationItem;
 import org.rhq.enterprise.gui.coregui.client.components.form.TimeUnit;
 import org.rhq.enterprise.gui.coregui.client.components.wizard.AbstractWizardStep;
@@ -42,14 +46,13 @@ import org.rhq.enterprise.gui.coregui.client.util.selenium.LocatableVLayout;
  * @author Jay Shaughnessy
  * @author Greg Hinkle
  */
-public class ResourceFactoryConfigurationStep extends AbstractWizardStep {
+public class ResourceFactoryConfigurationStep extends AbstractWizardStep implements PropertyValueChangeListener {
 
-    private boolean noConfigurationNeeded = false; // if true, it has been determined the user doesn't have to set any config
     private LocatableVLayout vLayout;
     private ConfigurationEditor editor;
     private Configuration startingConfig;
     private DurationItem timeoutItem;
-    AbstractResourceFactoryWizard wizard;
+    private AbstractResourceFactoryWizard wizard;
 
     public ResourceFactoryConfigurationStep(AbstractResourceFactoryWizard wizard) {
         this.wizard = wizard;
@@ -67,10 +70,11 @@ public class ResourceFactoryConfigurationStep extends AbstractWizardStep {
             TreeSet<TimeUnit> supportedUnits = new TreeSet<TimeUnit>();
             supportedUnits.add(TimeUnit.SECONDS);
             supportedUnits.add(TimeUnit.MINUTES);
-            timeoutItem = new DurationItem(AbstractOperationScheduleDataSource.Field.TIMEOUT, MSG
-                .view_operationScheduleDetails_field_timeout(), TimeUnit.MILLISECONDS, supportedUnits, false, false,
+            timeoutItem = new DurationItem(AbstractOperationScheduleDataSource.Field.TIMEOUT,
+                MSG.view_operationScheduleDetails_field_timeout(), TimeUnit.MILLISECONDS, supportedUnits, false, false,
                 vLayout);
-            timeoutItem.setContextualHelp(MSG.widget_resourceFactoryWizard_timeoutHelp());
+            ProductInfo productInfo = CoreGUI.get().getProductInfo();
+            timeoutItem.setContextualHelp(MSG.widget_resourceFactoryWizard_timeoutHelp(productInfo.getShortName()));
 
             DynamicForm timeoutForm = new DynamicForm();
             timeoutForm.setFields(timeoutItem);
@@ -99,17 +103,19 @@ public class ResourceFactoryConfigurationStep extends AbstractWizardStep {
                 ConfigurationGWTServiceAsync configurationService = GWTServiceLookup.getConfigurationService();
                 configurationService.getOptionValuesForConfigDefinition(def,
                     new AsyncCallback<ConfigurationDefinition>() {
-
-                        public void onFailure(Throwable throwable) {
-                            editor = new ConfigurationEditor(vLayout.extendLocatorId("Editor"), def, startingConfig);
-                            editor.setAllPropertiesWritable(true);
-                            vLayout.addMember(editor, 0);
-
+                        public void onSuccess(ConfigurationDefinition result) {
+                            createAndAddConfigurationEditor(result);
                         }
 
-                        public void onSuccess(ConfigurationDefinition result) {
-                            editor = new ConfigurationEditor(vLayout.extendLocatorId("Editor"), result, startingConfig);
+                        public void onFailure(Throwable throwable) {
+                            createAndAddConfigurationEditor(def);
+                        }
+
+                        private void createAndAddConfigurationEditor(ConfigurationDefinition def) {
+                            editor = new ConfigurationEditor(vLayout.extendLocatorId("Editor"), def, startingConfig);
                             editor.setAllPropertiesWritable(true);
+                            editor.addPropertyValueChangeListener(ResourceFactoryConfigurationStep.this);
+                            wizard.getView().updateButtonEnablement();
                             vLayout.addMember(editor, 0);
                         }
                     });
@@ -119,9 +125,15 @@ public class ResourceFactoryConfigurationStep extends AbstractWizardStep {
         return vLayout;
     }
 
+    @Override
+    public boolean isNextButtonEnabled() {
+        return (editor != null) && editor.isValid();
+    }
+
     public boolean nextPage() {
-        if (noConfigurationNeeded == true || (editor != null && editor.validate())) {
-            wizard.setNewResourceConfiguration((noConfigurationNeeded) ? null : editor.getConfiguration());
+        // Finish.
+        if ((editor != null) && editor.isValid()) {
+            wizard.setNewResourceConfiguration(editor.getConfiguration());
             wizard.setNewResourceCreateTimeout(timeoutItem.getValueAsInteger());
             wizard.execute();
             return true;
@@ -133,4 +145,10 @@ public class ResourceFactoryConfigurationStep extends AbstractWizardStep {
     public String getName() {
         return MSG.widget_resourceFactoryWizard_editConfigStepName();
     }
+
+    @Override
+    public void propertyValueChanged(PropertyValueChangeEvent event) {
+        wizard.getView().updateButtonEnablement();
+    }
+
 }

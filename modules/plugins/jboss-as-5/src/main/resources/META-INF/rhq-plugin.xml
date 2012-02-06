@@ -1073,7 +1073,7 @@
 
           <metric displayName="Version Name" property="MCBean|MCServer|*|versionName"
                   dataType="trait" displayType="summary"
-                  description="the code name for the this app server instance's major version (AS 5.0 = Morpheus, AS 5.1 = The Oracle, AS 6.0 = Neo)"/>
+                  description="the code name for this app server's version (AS 5.0 = Morpheus, AS 5.1 = The Oracle, AS 6.x = Neo)"/>
 
           <metric displayName="Build Date" property="MCBean|MCServer|*|buildDate"
                   dataType="trait" displayType="summary"
@@ -2278,7 +2278,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="The name of this EAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="ear" readOnly="true"/>
@@ -2313,6 +2312,15 @@
             	&deploymentContentConfigProps;
             </content>
 
+            <drift-definition 
+                  name="Template-Files" 
+                  description="Monitor files comprising the enterprise application archive (EAR).  Use filters for more fine-grained monitoring. Or, create definitions only on the embedded WAR resources themselves.">
+               <basedir>
+                  <value-context>measurementTrait</value-context>
+                  <value-name>custom.path</value-name>
+               </basedir>
+            </drift-definition>
+
         </service>
 
         <service name="Web Application (WAR)"
@@ -2326,8 +2334,8 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this WAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
-                    <c:simple-property name="contextPath" description="this WAR's context path (e.g. /admin-console)" readOnly="true"/>
+                    <!--  setting to required=false since this is not usually set properly at discovery time -->                    
+                    <c:simple-property name="contextPath" description="this WAR's context path (e.g. /admin-console)" required="false" readOnly="false"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="war" readOnly="true"/>
@@ -2363,6 +2371,15 @@
             <content name="file" displayName="WAR File" category="deployable" isCreationType="true">
                 &deploymentContentConfigProps;
             </content>
+
+            <drift-definition 
+                  name="Template-Files" 
+                  description="Monitor files comprising the web application archive (WAR).  Use filters for more fine-grained monitoring.">
+               <basedir>
+                  <value-context>measurementTrait</value-context>
+                  <value-name>custom.path</value-name>
+               </basedir>
+            </drift-definition>
 
             <service name="Web Application Context"
                      class="WebApplicationContextComponent"
@@ -2400,7 +2417,8 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this WAR" readOnly="true"/>
-                    <c:simple-property name="contextPath" description="this WAR's context path (e.g. /admin-console" readOnly="true"/>
+                    <!--  setting to required=false since this is not usually set properly at discovery time -->
+                    <c:simple-property name="contextPath" description="this WAR's context path (e.g. /admin-console" required="false" readOnly="false"/>
                 </c:group>
                 <c:group name="ResponseTime">
                    <c:simple-property name="responseTimeLogFile" required="false"
@@ -2467,7 +2485,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this EJB JAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="jar" readOnly="true"/>
@@ -2563,7 +2580,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this EJB JAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="jar" readOnly="true"/>
@@ -2636,7 +2652,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this EJB JAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="jar" readOnly="true"/>
@@ -2713,7 +2728,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this EJB JAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="jar" readOnly="true"/>
@@ -2775,7 +2789,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this RAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="rar" readOnly="true"/>
@@ -2821,7 +2834,6 @@
             <plugin-configuration>
                 <c:group name="general" displayName="General">
                     <c:simple-property name="deploymentName" description="the name of this RAR" readOnly="true"/>
-                    <c:simple-property name="filename" readOnly="true"/>
                 </c:group>
                 <c:group name="advanced" displayName="Advanced" hiddenByDefault="true">
                     <c:simple-property name="extension" default="rar" readOnly="true"/>

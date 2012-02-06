@@ -118,6 +118,11 @@ import org.rhq.core.domain.tagging.Tag;
         + " GROUP BY rg.groupCategory "),
 
     @NamedQuery(name = ResourceGroup.QUERY_FIND_BY_NAME, query = "SELECT rg FROM ResourceGroup AS rg WHERE LOWER(rg.name) = LOWER(:name)"),
+    @NamedQuery(name = ResourceGroup.QUERY_FIND_BY_NAME_VISIBLE_GROUP, query =
+            "SELECT rg FROM ResourceGroup AS rg " +
+                    " WHERE LOWER(rg.name) = LOWER(:name)" +
+                    "     AND rg.visible = true"
+    ),
     @NamedQuery(name = ResourceGroup.QUERY_FIND_BY_CLUSTER_KEY, query = "SELECT rg FROM ResourceGroup AS rg WHERE rg.clusterKey = :clusterKey"),
 
     @NamedQuery(name = ResourceGroup.QUERY_GET_AVAILABLE_RESOURCE_GROUPS_FOR_ROLE, query = "SELECT DISTINCT rg "
@@ -145,7 +150,7 @@ import org.rhq.core.domain.tagging.Tag;
         + " WHERE r.id = :id " //
         + "   AND r.id IN ( SELECT role.id " //
         + "                   FROM Role role " //
-        + "                   JOIN role.subjects s " // 
+        + "                   JOIN role.subjects s " //
         + "                  WHERE s.id = :subjectId ) "),
 
     @NamedQuery(name = ResourceGroup.QUERY_FIND_BY_IDS_admin, query = "" //
@@ -203,6 +208,7 @@ public class ResourceGroup extends Group {
     public static final String QUERY_FIND_RESOURCE_GROUP_SUMMARY_admin = "ResourceGroup.findResourceGroupSummary_admin";
 
     public static final String QUERY_FIND_BY_NAME = "ResourceGroup.findByName";
+    public static final String QUERY_FIND_BY_NAME_VISIBLE_GROUP = "ResourceGroup.findByNameVisibleGroup";
     public static final String QUERY_FIND_BY_CLUSTER_KEY = "ResourceGroup.findByClusterKey";
     public static final String QUERY_GET_AVAILABLE_RESOURCE_GROUPS_FOR_ROLE_WITH_EXCLUDES = "ResourceGroup.getAvailableResourceGroupsForRoleWithExcludes";
     public static final String QUERY_GET_AVAILABLE_RESOURCE_GROUPS_FOR_ROLE = "ResourceGroup.getAvailableResourceGroupsForRole";
@@ -403,6 +409,10 @@ public class ResourceGroup extends Group {
     @ManyToMany
     private Set<Resource> implicitResources;
 
+    //TODO ResourceGroup probably isn't the right owning side of this relationship
+    //this means that any update of a group can update the role membership,
+    //which is not something one normally does. Maybe the more logical owner of this
+    //relationship would be the Role.
     @JoinTable(name = "RHQ_ROLE_RESOURCE_GROUP_MAP", joinColumns = { @JoinColumn(name = "RESOURCE_GROUP_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     @ManyToMany
     private Set<Role> roles = new HashSet<Role>();
@@ -463,7 +473,7 @@ public class ResourceGroup extends Group {
     @ManyToOne
     private Resource autoGroupParentResource = null;
 
-    // When false hide this group from the UI. For example, for an autocluster or autogroup backing group. 
+    // When false hide this group from the UI. For example, for an autocluster or autogroup backing group.
     private boolean visible = true;
 
     // bulk delete @OneToMany(mappedBy = "resource", cascade = { CascadeType.ALL })
@@ -556,15 +566,22 @@ public class ResourceGroup extends Group {
     }
 
     public Set<Role> getRoles() {
+        //even though the field has an initializer, it can end up
+        //being null after deserialization. Because there is no
+        //setter and there are some other public methods depending
+        //on this not being null, let's make it lazy init.
+        if (roles == null) {
+            roles = new HashSet<Role>();
+        }
         return roles;
     }
 
     public void addRole(Role role) {
-        this.roles.add(role);
+        getRoles().add(role);
     }
 
     public void removeRole(Role role) {
-        this.roles.remove(role);
+        getRoles().remove(role);
     }
 
     @NotNull
@@ -735,8 +752,8 @@ public class ResourceGroup extends Group {
     @PrePersist
     @PreUpdate
     void onPersist() {
-        // always normalize empty string descriptions to NULL, which will give consistent sorting 
-        // between databases that treat empty string and null as distinct entities (e.g. postgres) 
+        // always normalize empty string descriptions to NULL, which will give consistent sorting
+        // between databases that treat empty string and null as distinct entities (e.g. postgres)
         // and those that interpret empty string and null as being equivalent (oracle)
         String description = getDescription();
         if (description != null && description.trim().equals("")) {

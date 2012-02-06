@@ -15,13 +15,7 @@
    <name>RHQ Enterprise Server JAR</name>
    <description>RHQ enterprise server main JAR</description>
 
-   <scm>
-      <connection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/server/jar/</connection>
-      <developerConnection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/server/jar/</developerConnection>
-   </scm>
-
    <properties>
-      <scm.module.path>modules/enterprise/server/jar/</scm.module.path>
       <rhq.server.datasource>java:/RHQDS</rhq.server.datasource>
       <rhq.server.ds-mapping>PostgreSQL</rhq.server.ds-mapping>
 
@@ -84,6 +78,13 @@
          <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>rhq-container-lib</artifactId>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      
        <dependency>
            <groupId>com.googlecode.java-diff-utils</groupId>
            <artifactId>diffutils</artifactId>
@@ -160,7 +161,7 @@
       </dependency>
 
       <dependency>
-         <groupId>jboss</groupId>
+         <groupId>javassist</groupId>
          <artifactId>javassist</artifactId>
          <!-- NOTE: The version is defined in the root POM's dependencyManagement section. -->
          <scope>test</scope>
@@ -477,7 +478,7 @@
        </dependency>
        <dependency>
            <groupId>org.jboss.resteasy</groupId>
-           <artifactId>resteasy-jettison-provider</artifactId>
+           <artifactId>resteasy-jackson-provider</artifactId>
            <version>${resteasy.version}</version>
            <scope>provided</scope> <!-- by container -->
        </dependency>
@@ -486,6 +487,34 @@
            <artifactId>resteasy-links</artifactId>
            <version>${resteasy.version}</version>
            <scope>provided</scope> <!-- by container -->
+       </dependency>
+       <dependency>
+             <groupId>org.jboss.resteasy</groupId>
+             <artifactId>resteasy-yaml-provider</artifactId>
+             <version>${resteasy.version}</version>
+           <scope>provided</scope>
+       </dependency>
+       <dependency>
+           <groupId>org.jboss.resteasy</groupId>
+           <artifactId>resteasy-jaxb-provider</artifactId>
+           <version>${resteasy.version}</version>
+           <scope>provided</scope>
+           <exclusions>
+               <exclusion>
+                   <groupId>com.sun.xml.bind</groupId>
+                   <artifactId>jaxb-impl</artifactId>
+               </exclusion>
+               <exclusion>
+                   <groupId>com.sun.xml.stream</groupId>
+                   <artifactId>sjsxp</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>org.yaml</groupId>
+           <artifactId>snakeyaml</artifactId>
+           <version>1.8</version>
        </dependency>
        <dependency>
            <groupId>org.jboss.el</groupId>
@@ -819,7 +848,7 @@ Build-OS-Version=${os.version}
                               <property name="javadoc.outputDirectory" value="${javadoc.outputDirectory}" />
                               <property name="project.dir" value="./src/main/java/org/rhq/enterprise/server" />
                               <property name="maven.compile.classpath" refid="maven.compile.classpath" />
- 
+
                               <mkdir dir="${javadoc.outputDirectory}/remote-api" />
                               <javadoc destdir="${javadoc.outputDirectory}/remote-api" author="false" version="true" windowtitle="RHQ ${project.version} Remote API" noindex="false">
                                  <classpath>

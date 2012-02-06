@@ -44,6 +44,7 @@ import org.rhq.core.domain.configuration.Property;
 import org.rhq.core.domain.configuration.PropertyList;
 import org.rhq.core.domain.configuration.PropertyMap;
 import org.rhq.core.domain.configuration.PropertySimple;
+import org.rhq.core.domain.measurement.AvailabilityType;
 import org.rhq.core.domain.measurement.ResourceAvailability;
 import org.rhq.core.domain.resource.ResourceType;
 
@@ -63,6 +64,7 @@ public class TabularWriter {
     private CSVWriter csvWriter;
     private SummaryFilter summaryFilter = new SummaryFilter();
     boolean exportMode;
+    boolean hideRowCount;
 
     static Set<String> IGNORED_PROPS = new HashSet<String>();
 
@@ -79,6 +81,8 @@ public class TabularWriter {
     static {
         SIMPLE_TYPES.add(Byte.class);
         SIMPLE_TYPES.add(Byte.TYPE);
+        SIMPLE_TYPES.add(Character.class);
+        SIMPLE_TYPES.add(Character.TYPE);
         SIMPLE_TYPES.add(Short.class);
         SIMPLE_TYPES.add(Short.TYPE);
         SIMPLE_TYPES.add(Integer.class);
@@ -112,6 +116,10 @@ public class TabularWriter {
         }
     }
 
+    public void setHideRowCount(boolean hideRowCount) {
+        this.hideRowCount = hideRowCount;
+    }
+
     public void print(Object object) {
 
         if (object instanceof Map) {
@@ -130,7 +138,48 @@ public class TabularWriter {
         }
 
         if (object != null && object.getClass().isArray()) {
-            print((Object[]) object);
+            if (!object.getClass().getComponentType().isPrimitive()) {
+                print((Object[]) object);
+            } else {
+                Class<?> oClass = object.getClass();
+                // note: we assume single-dimension arrays!
+                out.println("Array of " + (oClass.getComponentType().getName()));
+                if (oClass == byte[].class) {
+                    for (byte i : (byte[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == short[].class) {
+                    for (short i : (short[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == int[].class) {
+                    for (int i : (int[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == long[].class) {
+                    for (long i : (long[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == char[].class) {
+                    for (char i : (char[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == float[].class) {
+                    for (float i : (float[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == double[].class) {
+                    for (double i : (double[]) object) {
+                        this.out.println(i);
+                    }
+                } else if (oClass == boolean[].class) {
+                    for (boolean i : (boolean[]) object) {
+                        this.out.println(i);
+                    }
+                } else {
+                    this.out.println("*Printing of this data type is not supported*");
+                }
+            }
             return;
         }
 
@@ -261,15 +310,18 @@ public class TabularWriter {
 
     public void print(Collection list) {
         // List of arbitrary objects
-        if (list == null || list.size() == 0)
-            out.println("no data");
-        else if (list.size() == 1 && !CSV.equals(format)) {
-            out.println("one row");
+        if (list == null || list.size() == 0) {
+            if (!hideRowCount) {
+                out.println("0 rows");
+            }
+        } else if (list.size() == 1 && !CSV.equals(format)) {
+            if (!hideRowCount) {
+                out.println("one row");
+            }
 
             print(list.iterator().next());
         } else {
-
-            String[][] data = null;
+            String[][] data;
 
             if (!allOneType(list)) {
                 printStrings(list);
@@ -285,7 +337,7 @@ public class TabularWriter {
                         for (Object object : list) {
                             data[i++][0] = (String) object;
                         }
-
+                        this.print(data);
                     } else {
 
                         if (consistentMaps(list)) {
@@ -318,30 +370,33 @@ public class TabularWriter {
                                 }
                             }
 
-                            headers = new String[pdList.size()];
-                            data = new String[list.size()][pdList.size()];
+                            if (pdList.isEmpty()) {
+                                printStrings(list);
+                            } else {
+                                headers = new String[pdList.size()];
+                                data = new String[list.size()][pdList.size()];
 
-                            for (PropertyDescriptor pd : pdList) {
-                                headers[i++] = pd.getName();
-                            }
-                            i = 0;
-                            for (Object row : list) {
-                                int j = 0;
                                 for (PropertyDescriptor pd : pdList) {
-
-                                    Object val = "?";
-                                    val = invoke(row, pd.getReadMethod());
-                                    if (val == null) {
-                                        data[i][j++] = "";
-                                    } else {
-                                        data[i][j++] = shortVersion(val);
-                                    }
+                                    headers[i++] = pd.getName();
                                 }
-                                i++;
+                                i = 0;
+                                for (Object row : list) {
+                                    int j = 0;
+                                    for (PropertyDescriptor pd : pdList) {
+
+                                        Object val = "?";
+                                        val = invoke(row, pd.getReadMethod());
+                                        if (val == null) {
+                                            data[i][j++] = "";
+                                        } else {
+                                            data[i][j++] = shortVersion(val);
+                                        }
+                                    }
+                                    i++;
+                                }
+
+                                this.print(data);
                             }
-
-                            this.print(data);
-
                         }
                     }
                 } catch (Exception e) {
@@ -503,7 +558,9 @@ public class TabularWriter {
 
     public void print(Object[] data) {
         if (data == null || data.length == 0) {
-            out.println("0 rows");
+            if (!hideRowCount) {
+                out.println("0 rows");
+            }
             return;
         }
         out.println("Array of " + (data.getClass().getComponentType().getName()));
@@ -530,13 +587,11 @@ public class TabularWriter {
             for (Integer col : columns) {
                 actualColumnWidths[col] = maxColumnWidth;
             }
-        }
-        else if (columns.size() == 0) {
+        } else if (columns.size() == 0) {
             // If the columns list is empty then that means that there is enough available
             // space for each column so we are done.
             return;
-        }
-        else if (extraSpace > 0) {
+        } else if (extraSpace > 0) {
             // Since we have extra space, we will go ahead and recalculate the widths for
             // those columns still needing space
             int newMaxColumnWidth = (maxColumnWidth + extraSpace) / columns.size();
@@ -547,7 +602,9 @@ public class TabularWriter {
     public void print(String[][] data) {
 
         if (data == null || data.length == 0) {
-            out.println("0 rows");
+            if (!hideRowCount) {
+                out.println("0 rows");
+            }
             return;
         }
 
@@ -616,7 +673,9 @@ public class TabularWriter {
             }
         }
 
-        out.print(data.length + " rows\n");
+        if (!hideRowCount) {
+            out.print(data.length + " rows\n");
+        }
     }
 
     private void printSpaced(PrintWriter out, String data, int length) {
@@ -671,7 +730,8 @@ public class TabularWriter {
         } else if (object instanceof ResourceType) {
             return ((ResourceType) object).getName();
         } else if (object instanceof ResourceAvailability) {
-            return ((ResourceAvailability) object).getAvailabilityType().getName();
+            AvailabilityType availType = ((ResourceAvailability) object).getAvailabilityType();
+            return (availType == null) ? "?" : availType.getName();
         } else if (object != null && object.getClass().isArray()) {
             return Arrays.toString((Object[]) object);
         } else {

@@ -16,15 +16,6 @@
    <name>RHQ Enterprise Modules</name>
    <description>parent POM for modules comprising the RHQ enterprise edition</description>
 
-   <scm>
-      <connection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/</connection>
-      <developerConnection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/</developerConnection>
-   </scm>
-
-   <properties>
-      <scm.module.path>modules/enterprise/</scm.module.path>
-   </properties>
-
    <dependencies>
       <dependency>
         <groupId>net.sourceforge.cobertura</groupId>
@@ -55,6 +46,7 @@
             <module>server/ear</module>
             <module>binding</module>
             <module>server/client-api</module>            
+            <module>server/itests</module>
          </modules>
       </profile>
 
@@ -81,6 +73,7 @@
             <module>server/container-lib</module>
             <module>server/container</module>
             <module>server/client-api</module>
+            <module>server/itests</module>
          </modules>
       </profile>
 

@@ -252,7 +252,7 @@ public class TomcatServerOperationsDelegate {
     private ProcessExecution getRpmStart(Configuration pluginConfiguration) {
         ProcessExecution processExecution;
         String catalinaHome = this.serverComponent.getCatalinaHome().getPath();
-        String rpm = TomcatDiscoveryComponent.isEWSTomcat6(catalinaHome) ? TomcatDiscoveryComponent.EWS_TOMCAT_6
+        String rpm = TomcatDiscoveryComponent.isRPMTomcat6(catalinaHome) ? TomcatDiscoveryComponent.EWS_TOMCAT_6
             : TomcatDiscoveryComponent.EWS_TOMCAT_5;
 
         processExecution = new ProcessExecution("service");
@@ -335,7 +335,7 @@ public class TomcatServerOperationsDelegate {
     private ProcessExecution getRpmShutdown() {
         ProcessExecution processExecution;
         String catalinaHome = this.serverComponent.getCatalinaHome().getPath();
-        String rpm = TomcatDiscoveryComponent.isEWSTomcat6(catalinaHome) ? TomcatDiscoveryComponent.EWS_TOMCAT_6
+        String rpm = TomcatDiscoveryComponent.isRPMTomcat6(catalinaHome) ? TomcatDiscoveryComponent.EWS_TOMCAT_6
             : TomcatDiscoveryComponent.EWS_TOMCAT_5;
 
         processExecution = new ProcessExecution("service");
@@ -403,7 +403,7 @@ public class TomcatServerOperationsDelegate {
 
     private void initProcessExecution(ProcessExecution processExecution) {
         processExecution.setCaptureOutput(true);
-        processExecution.setWaitForCompletion(1000L); // 1 second // TODO: Should we wait longer than one second?
+        processExecution.setWaitForCompletion(120000L); // 120 seconds - that should be safe? // TODO: make this configurable 
         processExecution.setKillOnTimeout(false);
     }
 

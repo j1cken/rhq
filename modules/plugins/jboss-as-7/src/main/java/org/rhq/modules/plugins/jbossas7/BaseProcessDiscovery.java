@@ -53,6 +53,8 @@ public class BaseProcessDiscovery extends AbstractBaseDiscovery implements Resou
 
 {
     static final String DORG_JBOSS_BOOT_LOG_FILE = "-Dorg.jboss.boot.log.file=";
+    private static final String JBOSS_EAP_6 = "JBoss Enterprise Application Platform 6";
+    private static final String AS7 = "AS7";
     private final Log log = LogFactory.getLog(this.getClass());
 
     /**
@@ -65,135 +67,156 @@ public class BaseProcessDiscovery extends AbstractBaseDiscovery implements Resou
 
         for (ProcessScanResult psr : scans) {
 
-            Configuration config = discoveryContext.getDefaultPluginConfiguration();
-            // IF SE, then look at domain/configuration/host.xml <management interface="default" port="9990
-            // for management port
-            String[] commandLine = psr.getProcessInfo().getCommandLine();
-            String serverNameFull;
-            String serverName;
-            String psName = psr.getProcessScan().getName();
-            String description = discoveryContext.getResourceType().getDescription();
-            String homeDir = getHomeDirFromCommandLine(commandLine);
-            String version = determineServerVersionFromHomeDir(homeDir);
-            boolean isEAP = false;
+            try {
+                Configuration config = discoveryContext.getDefaultPluginConfiguration();
+                // IF SE, then look at domain/configuration/host.xml <management interface="default" port="9990
+                // for management port
+                String[] commandLine = psr.getProcessInfo().getCommandLine();
+                String serverNameFull;
+                String serverName;
+                String psName = psr.getProcessScan().getName();
+                String description;
+                String homeDir = getHomeDirFromCommandLine(commandLine);
+                String version = determineServerVersionFromHomeDir(homeDir);
+                boolean isEAP = false;
 
-            //retrieve specific boot log file. Override for Standalone as server.log is more appropriate
-            String bootLogFile = getLogFileFromCommandLine(commandLine);
-            String logFile = bootLogFile;
+                //retrieve specific boot log file. Override for Standalone as server.log is more appropriate
+                String bootLogFile = getLogFileFromCommandLine(commandLine);
+                String logFile = bootLogFile;
 
-            if (homeDir.contains("eap")) {
-                isEAP=true;
-                version="EAP " + version;
-            }
-
-            if (psName.equals("HostController")) {
-
-                readStandaloneOrHostXml(psr.getProcessInfo(), true);
-                HostPort hp = getDomainControllerFromHostXml();
-                if (hp.isLocal) {
-                    serverName = "DomainController"; // TODO make more unique
-                    serverNameFull = "DomainController";
-                    description = "Domain controller for an AS7 domain";
-                }
-                else {
-                    serverName = "HostController"; // TODO make more unique
-                    serverNameFull = "HostController";
+                if (homeDir.contains("eap")) {
+                    isEAP=true;
                 }
 
-                config.put(new PropertySimple("baseDir", homeDir));
-                config.put(new PropertySimple("startScript", AS7Mode.DOMAIN.getStartScript()));
-                String host = findHost(psr.getProcessInfo(), true);
-                config.put(new PropertySimple("domainHost", host));
+                if (psName.equals("HostController")) {
 
-                fillUserPassFromFile(config, "domain", homeDir);
+                    readStandaloneOrHostXml(psr.getProcessInfo(), true);
+                    HostPort hp = getDomainControllerFromHostXml();
+                    if (hp.isLocal) {
+                        serverName = "DomainController"; // TODO make more unique
+                        serverNameFull = "DomainController";
+                        if (isEAP)
+                            description = "Domain controller for a " + JBOSS_EAP_6 + " domain";
+                        else
+                            description = "Domain controller for an " + AS7 + " domain";
+                    }
+                    else {
+                        serverName = "HostController"; // TODO make more unique
+                        serverNameFull = "HostController";
+                        if (isEAP)
+                            description = "Host controller for a " + JBOSS_EAP_6 + " host";
+                        else
+                            description = "Host controller for an " + AS7 + " host";
 
-                // provide running config
-                String domainConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.DOMAIN);
-                String hostConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.HOST);
-                config.put(new PropertySimple("domainConfig",domainConfig));
-                config.put(new PropertySimple("hostConfig",hostConfig));
+                    }
 
-            } else { // Standalone server
-                serverNameFull = homeDir;
+                    config.put(new PropertySimple("baseDir", homeDir));
+                    config.put(new PropertySimple("startScript", AS7Mode.DOMAIN.getStartScript()));
+                    String host = findHost(psr.getProcessInfo(), true);
+                    config.put(new PropertySimple("domainHost", host));
+
+                    fillUserPassFromFile(config, AS7Mode.DOMAIN, homeDir);
+
+                    // provide running config
+                    String domainConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.DOMAIN);
+                    String hostConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.HOST);
+                    config.put(new PropertySimple("domainConfig",domainConfig));
+                    config.put(new PropertySimple("hostConfig",hostConfig));
+
+                } else { // Standalone server
+                    serverNameFull = homeDir;
+
+                    if (isEAP)
+                        description = "Standalone " + JBOSS_EAP_6 + " server";
+                    else
+                        description = "Standalone " + AS7 + " server";
+
+                    readStandaloneOrHostXml(psr.getProcessInfo(), false);
+                    if ( serverNameFull.isEmpty()) {
+                        // Try to obtain the server name
+                        //  -Dorg.jboss.boot.log.file=domain/servers/server-one/log/boot.log
+                        // This is a hack until I know a better way to do so.
+                        String tmp = getLogFileFromCommandLine(commandLine);
+                        int i = tmp.indexOf("servers/");
+                        tmp = tmp.substring(i + 8);
+                        tmp = tmp.substring(0, tmp.indexOf("/"));
+                        serverNameFull = tmp;
+
+                    }
+                    String host = findHost(psr.getProcessInfo(), false);
+                    config.put(new PropertySimple("domainHost", host));
+
+                    config.put(new PropertySimple("baseDir", serverNameFull));
+
+                    serverName = findHostName();
+                    if (serverName.isEmpty())
+                        serverName = serverNameFull;
 
 
-                readStandaloneOrHostXml(psr.getProcessInfo(), false);
-                if ( serverNameFull.isEmpty()) {
-                    // Try to obtain the server name
-                    //  -Dorg.jboss.boot.log.file=domain/servers/server-one/log/boot.log
-                    // This is a hack until I know a better way to do so.
-                    String tmp = getLogFileFromCommandLine(commandLine);
-                    int i = tmp.indexOf("servers/");
-                    tmp = tmp.substring(i + 8);
-                    tmp = tmp.substring(0, tmp.indexOf("/"));
-                    serverNameFull = tmp;
+                    String serverConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.STANDALONE);
+                    config.put(new PropertySimple("config",serverConfig));
+                    config.put(new PropertySimple("startScript",AS7Mode.STANDALONE.getStartScript()));
 
+                    fillUserPassFromFile(config, AS7Mode.STANDALONE, serverNameFull);
+
+                    //preload server.log file for event log monitoring
+                    logFile = bootLogFile.substring(0, bootLogFile.lastIndexOf("/")) + File.separator + "server.log";
                 }
-                String host = findHost(psr.getProcessInfo(), false);
-                config.put(new PropertySimple("domainHost", host));
 
-                config.put(new PropertySimple("baseDir", serverNameFull));
+                if (isEAP) {
+                    serverName = "EAP " + serverName;
+                    version="EAP " + version;
+                }
 
-                serverName = findHostName();
-                if (serverName.isEmpty())
-                    serverName = serverNameFull;
+                initLogEventSourcesConfigProp(logFile, config);
 
+                HostPort managmentPort = getManagementPortFromHostXml(commandLine);
+                config.put(new PropertySimple("hostname", managmentPort.host));
+                config.put(new PropertySimple("port", managmentPort.port));
+                config.put(new PropertySimple("realm",getManagementSecurtiyRealmFromHostXml()));
 
-                String serverConfig = getServerConfigFromCommandLine(commandLine, AS7Mode.STANDALONE);
-                config.put(new PropertySimple("config",serverConfig));
-                config.put(new PropertySimple("startScript",AS7Mode.STANDALONE.getStartScript()));
+                //            String javaClazz = psr.getProcessInfo().getName();
 
-                fillUserPassFromFile(config, "standalone", serverNameFull);
+                /*
+                    * We'll connect to the discovered VM on the local host, so set the jmx connection
+                    * properties accordingly. This may only work on JDK6+, but then JDK5 is deprecated
+                    * anyway.
+                    */
+                //                config.put(new PropertySimple(JMXDiscoveryComponent.COMMAND_LINE_CONFIG_PROPERTY,
+                //                        javaClazz));
+                //                config.put(new PropertySimple(JMXDiscoveryComponent.CONNECTION_TYPE,
+                //                        LocalVMTypeDescriptor.class.getName()));
+                //
+                //                // TODO vmid will change when the detected server is bounced - how do we follow this?
+                //                config.put(new PropertySimple(JMXDiscoveryComponent.VMID_CONFIG_PROPERTY,psr.getProcessInfo().getPid()));
 
-                //preload server.log file for event log monitoring
-                logFile = bootLogFile.substring(0, bootLogFile.lastIndexOf("/")) + File.separator + "server.log";
+                DiscoveredResourceDetails detail = new DiscoveredResourceDetails(discoveryContext.getResourceType(), // ResourceType
+                    serverNameFull, // key TODO distinguish per domain?
+                    serverName, // Name
+                    version, // TODO get via API ?
+                    description, // Description
+                    config, psr.getProcessInfo());
+
+                // Add to return values
+                discoveredResources.add(detail);
+                log.info("Discovered new ...  " + discoveryContext.getResourceType() + ", " + serverNameFull);
+            } catch (Exception e) {
+                log.warn("Discovery for a " + discoveryContext.getResourceType() + " failed for process " + psr + " :" + e.getMessage());
             }
-
-            if (isEAP) {
-                description=description.replace("AS7","EAP6");
-            }
-
-            initLogEventSourcesConfigProp(logFile, config);
-
-            HostPort managmentPort = getManagementPortFromHostXml(commandLine);
-            config.put(new PropertySimple("hostname", managmentPort.host));
-            config.put(new PropertySimple("port", managmentPort.port));
-            //            String javaClazz = psr.getProcessInfo().getName();
-
-            /*
-             * We'll connect to the discovered VM on the local host, so set the jmx connection
-             * properties accordingly. This may only work on JDK6+, but then JDK5 is deprecated
-             * anyway.
-             */
-            //                config.put(new PropertySimple(JMXDiscoveryComponent.COMMAND_LINE_CONFIG_PROPERTY,
-            //                        javaClazz));
-            //                config.put(new PropertySimple(JMXDiscoveryComponent.CONNECTION_TYPE,
-            //                        LocalVMTypeDescriptor.class.getName()));
-            //
-            //                // TODO vmid will change when the detected server is bounced - how do we follow this?
-            //                config.put(new PropertySimple(JMXDiscoveryComponent.VMID_CONFIG_PROPERTY,psr.getProcessInfo().getPid()));
-
-            DiscoveredResourceDetails detail = new DiscoveredResourceDetails(discoveryContext.getResourceType(), // ResourceType
-                serverNameFull, // key TODO distinguish per domain?
-                serverName, // Name
-                version, // TODO get via API ?
-                description, // Description
-                config, psr.getProcessInfo());
-
-            // Add to return values
-            discoveredResources.add(detail);
-            log.info("Discovered new ...  " + discoveryContext.getResourceType() + ", " + serverNameFull);
         }
 
         return discoveredResources;
 
     }
 
-    private void fillUserPassFromFile(Configuration config, String mode, String baseDir) {
+    private void fillUserPassFromFile(Configuration config, AS7Mode mode, String baseDir) {
 
-        String configDir = baseDir + File.separator + mode + File.separator + "configuration";
+//        String configDir = baseDir + File.separator + mode + File.separator + "configuration";
+        String realm = getManagementSecurtiyRealmFromHostXml();
+        String fileName = getSecurityPropertyFileFromHostXml(baseDir,mode, realm);
 
-        File file = new File(configDir, "mgmt-users.properties");
+
+        File file = new File(fileName);
         if (!file.exists() || !file.canRead()) {
             if (log.isDebugEnabled())
                 log.debug("No console user properties file found at [" + file.getAbsolutePath()
@@ -216,11 +239,11 @@ public class BaseProcessDiscovery extends AbstractBaseDiscovery implements Resou
                 String user = line.substring(0, line.indexOf("="));
                 String pass = line.substring(line.indexOf("=") + 1);
                 config.put(new PropertySimple("user", user));
-                config.put(new PropertySimple("password", pass));
+//                config.put(new PropertySimple("password", pass));  // this is now hashed, so no point in supplying it
 
             }
         } catch (IOException e) {
-            e.printStackTrace(); // TODO: Customise this generated block
+            log.error(e.getMessage());
         } finally {
             if (br != null)
                 try {
@@ -246,7 +269,7 @@ public class BaseProcessDiscovery extends AbstractBaseDiscovery implements Resou
                 is.close();
             }
         } catch (Exception e) {
-            e.printStackTrace(); // TODO: Customise this generated block
+            log.error(e.getMessage());
         }
         if (hostName == null)
             hostName = "local"; // Fallback to the installation default

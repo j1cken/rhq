@@ -18,6 +18,8 @@
  */
 package org.rhq.enterprise.gui.coregui.client.inventory.resource.detail;
 
+import java.util.Set;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.types.Alignment;
@@ -37,6 +39,8 @@ import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.RecordClickEvent;
 import com.smartgwt.client.widgets.grid.events.RecordClickHandler;
 
+import org.rhq.core.domain.authz.Permission;
+import org.rhq.core.domain.resource.composite.ResourceComposite;
 import org.rhq.enterprise.gui.coregui.client.CoreGUI;
 import org.rhq.enterprise.gui.coregui.client.components.table.AbstractTableAction;
 import org.rhq.enterprise.gui.coregui.client.components.table.Table;
@@ -50,10 +54,16 @@ import org.rhq.enterprise.gui.coregui.client.util.selenium.LocatableHTMLPane;
 import org.rhq.enterprise.gui.coregui.client.util.selenium.LocatableWindow;
 
 public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
+
     private static final String ERROR_ICON = "[SKIN]/Dialog/warn.png";
 
-    public ResourceErrorsView(String locatorId, String string, Criteria criteria, Object object, String[] strings) {
+    private ResourceTitleBar titleBar;
+
+    public ResourceErrorsView(String locatorId, Criteria criteria, ResourceTitleBar titleBar) {
         super(locatorId, MSG.common_title_component_errors(), criteria);
+
+        this.titleBar = titleBar;
+
         setWidth100();
         setHeight100();
         setShowHeader(false);
@@ -126,9 +136,11 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
 
         setListGridFields(errorTypeField, timeField, summaryField, iconField);
 
+        ResourceComposite resourceComposite = titleBar.getResource();
+        Set<Permission> resourcePermissions = resourceComposite.getResourcePermission().getPermissions();
+        final boolean canModifyResource = resourcePermissions.contains(Permission.MODIFY_RESOURCE);
         addTableAction(extendLocatorId("delete"), MSG.common_button_delete(), MSG.common_msg_areYouSure(),
-            new AbstractTableAction(TableActionEnablement.ANY) {
-                @Override
+            new AbstractTableAction(canModifyResource ? TableActionEnablement.ANY : TableActionEnablement.NEVER) {
                 public void executeAction(final ListGridRecord[] selection, Object actionValue) {
                     if (selection == null || selection.length == 0) {
                         return;
@@ -138,9 +150,9 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
                     for (ListGridRecord record : selection) {
                         resourceErrorIds[i++] = record.getAttributeAsInt(Field.ID);
                     }
+
                     GWTServiceLookup.getResourceService().deleteResourceErrors(resourceErrorIds,
                         new AsyncCallback<Void>() {
-                            @Override
                             public void onSuccess(Void result) {
                                 Message msg = new Message(MSG.dataSource_resourceErrors_deleteSuccess(String
                                     .valueOf(selection.length)), Severity.Info);
@@ -148,7 +160,6 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
                                 refresh();
                             }
 
-                            @Override
                             public void onFailure(Throwable caught) {
                                 CoreGUI.getErrorHandler().handleError(MSG.dataSource_resourceErrors_deleteFailure(),
                                     caught);
@@ -156,6 +167,12 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
                         });
                 }
             });
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        this.titleBar.refresh();
     }
 
     private void popupDetails(String details) {
@@ -172,9 +189,9 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
         winModal.setCanDragResize(true);
         winModal.centerInPage();
         winModal.addCloseClickHandler(new CloseClickHandler() {
-            @Override
             public void onCloseClick(CloseClientEvent event) {
                 winModal.markForDestroy();
+                titleBar.refresh();
             }
         });
 
@@ -186,4 +203,5 @@ public class ResourceErrorsView extends Table<ResourceErrorsDataSource> {
         winModal.addItem(htmlPane);
         winModal.show();
     }
+
 }

@@ -16,17 +16,9 @@
   <name>RHQ Enterprise Server Container</name>
   <description>The full RHQ container build, including the JBossAS server and all config/deploy files</description>
 
-  <scm>
-    <connection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/server/container/</connection>
-    <developerConnection>scm:git:ssh://git.fedorahosted.org/git/rhq.git/modules/enterprise/server/container/</developerConnection>
-  </scm>
-
   <properties>
-    <scm.module.path>modules/enterprise/server/container/</scm.module.path>
-
     <!-- dependency versions -->
     <jboss-faces.version>4.2.3.GA</jboss-faces.version>
-
     <rhq.webappsReloadable>false</rhq.webappsReloadable>
   </properties>
 
@@ -117,18 +109,6 @@
             <version>1.7.3</version>
      </dependency>
 
-      <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-jaxrs-all</artifactId>
-          <scope>provided</scope>
-          <version>${resteasy.version}</version>
-          <type>pom</type>
-      </dependency>
-      <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-jettison-provider</artifactId>
-      </dependency>
-
   </dependencies>
 
   <build>
@@ -189,12 +169,12 @@
                   <property name="ojdbc5.version" value="${ojdbc5.version}" />
                   <property name="postgresql.version" value="${postgresql.version}" />
                   <property name="h2.version" value="${h2.version}" />
+                  <property name="jboss-javassist.version" value="${jboss-javassist.version}" />
                   <property name="jtds.version" value="${jtds.version}" />
                   <property name="jsf-api.version" value="${jsf-api.version}" />
                   <property name="jsf-impl.version" value="${jsf-impl.version}" />
                   <property name="hibernate3.version" value="${hibernate3.version}" />
                   <property name="quartz.version" value="${quartz.version}" />
-                  <property name="resteasy.version" value="${resteasy.version}" />
 
                   <!-- dev DB settings (used to init rhq-server.properties if dev profile is active or developer prop is set) -->
                   <property name="rhq.dev.ds.connection-url" value="${rhq.dev.ds.connection-url}" />

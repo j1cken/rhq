@@ -19,6 +19,8 @@
 
 package org.rhq.core.pc.drift;
 
+import static org.rhq.core.util.file.FileUtil.generateRegex;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +31,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.rhq.core.domain.drift.Filter;
 import org.rhq.core.util.file.FileVisitor;
 import org.rhq.core.util.file.PathFilter;
-
-import static org.rhq.core.util.file.FileUtil.generateRegex;
 
 /**
  * A file visitor that peforms filtering using specified filters. When a file matches a
@@ -144,8 +144,8 @@ public class FilterFileVisitor implements FileVisitor {
             }
         } else {
             // else neither includes nor excludes is empty
-            if (includesPattern.matcher(file.getAbsolutePath()).matches() &&
-                !excludesPattern.matcher(file.getAbsolutePath()).matches()) {
+            if (includesPattern.matcher(file.getAbsolutePath()).matches()
+                && !excludesPattern.matcher(file.getAbsolutePath()).matches()) {
                 visitor.visit(file);
             }
         }

@@ -20,6 +20,7 @@ package org.rhq.enterprise.server.measurement;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -176,9 +177,9 @@ public class MeasurementDataManagerBean implements MeasurementDataManagerLocal, 
         long start = System.currentTimeMillis();
         // TODO GH: Deal with offset (this is only for situations where the clock doesn't match on the agent)
 
-        /* 
+        /*
          * even if these methods check for null/empty collections, they cross the EJB boundary and so unnecessarily
-         * start transactions.  by checking the null/emptiness of a collection here, by only create transactions 
+         * start transactions.  by checking the null/emptiness of a collection here, by only create transactions
          * when real work will be done;
          */
         if (report.getNumericData() != null && !report.getNumericData().isEmpty()) {
@@ -236,7 +237,8 @@ public class MeasurementDataManagerBean implements MeasurementDataManagerLocal, 
             }
 
             for (MeasurementDataNumeric aData : data) {
-                if (aData.getValue() == null || Double.isNaN(aData.getValue())) {
+                Double value = aData.getValue();
+                if ((value == null) || Double.isNaN(value) || Double.isInfinite(value)) {
                     expectedCount--;
                     continue;
                 }
@@ -254,7 +256,7 @@ public class MeasurementDataManagerBean implements MeasurementDataManagerLocal, 
 
                 ps.setInt(1, aData.getScheduleId());
                 ps.setLong(2, aData.getTimestamp());
-                ps.setDouble(3, aData.getValue());
+                ps.setDouble(3, value);
                 ps.addBatch();
             }
 
@@ -723,8 +725,8 @@ public class MeasurementDataManagerBean implements MeasurementDataManagerLocal, 
     List<List<MeasurementDataNumericHighLowComposite>> findDataForCompatibleGroup(Subject subject, int groupId,
         int definitionId, long beginTime, long endTime, int numPoints) {
 
-        List<List<MeasurementDataNumericHighLowComposite>> ret = findDataForContext(subject, EntityContext
-            .forGroup(groupId), definitionId, beginTime, endTime, numPoints);
+        List<List<MeasurementDataNumericHighLowComposite>> ret = findDataForContext(subject,
+            EntityContext.forGroup(groupId), definitionId, beginTime, endTime, numPoints);
         return ret;
     }
 
@@ -789,8 +791,44 @@ public class MeasurementDataManagerBean implements MeasurementDataManagerLocal, 
         AgentClient ac = agentClientManager.getAgentClient(agent);
         Set<MeasurementData> values = ac.getMeasurementAgentService().getRealTimeMeasurementValue(resourceId,
             createRequests(definitions));
+        //[BZ 760139] always return non-null value even when there are errors on the server side.  Avoids cryptic
+        //            Global UI Exceptions when attempting to serialize null responses.
+        if (values == null) {
+            values = Collections.emptySet();
+        }
 
         return values;
+    }
+
+    @Override
+    public List<MeasurementDataNumeric> findRawData(Subject subject, int scheduleId, long startTime, long endTime) {
+
+        List<MeasurementDataNumeric> result = new ArrayList<MeasurementDataNumeric>();
+        String table = MeasurementDataManagerUtility.getCurrentRawTable();
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            connection = rhqDs.getConnection();
+            ps = connection.prepareStatement( // TODO supply real impl that spans multiple tables
+                    "SELECT time_stamp,value FROM " + table + " WHERE schedule_id= ? AND time_stamp BETWEEN ? AND ?");
+            ps.setLong(1,scheduleId);
+            ps.setLong(2,startTime);
+            ps.setLong(3,endTime);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                MeasurementDataNumeric point = new MeasurementDataNumeric(rs.getLong(1),scheduleId,rs.getDouble(2));
+                result.add(point);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();  // TODO: Customise this generated block
+        } finally {
+            JDBCUtil.safeClose(connection, ps, rs);
+        }
+
+
+        return result;
     }
 
     private List<MeasurementDataRequest> createRequests(List<MeasurementDefinition> definitions) {

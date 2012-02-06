@@ -35,29 +35,32 @@ public class ResourceInstallCount implements Serializable {
     private ResourceCategory category;
     private int typeId;
     private String version;
+    private int numDriftTemplates;
+    private boolean inCompliance;
 
     public ResourceInstallCount() {
     }
 
-    public ResourceInstallCount(String typeName, String typePlugin, ResourceCategory category, int typeId, long count, String version) {
+    public ResourceInstallCount(String typeName, String typePlugin, ResourceCategory category, int typeId, long count) {
+        this(typeName, typePlugin, category, typeId, count, null, -1, -1);
+    }
+
+    public ResourceInstallCount(String typeName, String typePlugin, ResourceCategory category, int typeId, long count,
+        String version) {
+        this(typeName, typePlugin, category, typeId, count, version, -1, -1);
+    }
+
+    public ResourceInstallCount(String typeName, String typePlugin, ResourceCategory category, int typeId, long count,
+        String version, int numDriftTemplates, int inCompliance) {
         this.count = count;
         this.typeName = typeName;
         this.typePlugin = typePlugin;
         this.category = category;
         this.typeId = typeId;
         this.version = version;
-
+        this.numDriftTemplates = numDriftTemplates;
+        this.inCompliance = inCompliance == 0;
     }
-
-
-    public ResourceInstallCount(String typeName, String typePlugin, ResourceCategory category, int typeId, long count) {
-        this.count = count;
-        this.typeName = typeName;
-        this.typePlugin = typePlugin;
-        this.category = category;
-        this.typeId = typeId;
-    }
-
 
     public long getCount() {
         return count;
@@ -105,5 +108,21 @@ public class ResourceInstallCount implements Serializable {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public int getNumDriftTemplates() {
+        return numDriftTemplates;
+    }
+
+    public void setNumDriftTemplates(int numDriftTemplates) {
+        this.numDriftTemplates = numDriftTemplates;
+    }
+
+    public boolean isInCompliance() {
+        return inCompliance;
+    }
+
+    public void setInCompliance(boolean inCompliance) {
+        this.inCompliance = inCompliance;
     }
 }

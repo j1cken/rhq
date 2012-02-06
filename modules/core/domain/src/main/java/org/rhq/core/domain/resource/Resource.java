@@ -746,9 +746,27 @@ import org.rhq.core.domain.util.Summary;
         + "FROM Resource r " //
         + "WHERE r.inventoryStatus = 'COMMITTED' " //
         + "GROUP BY r.resourceType.name, r.resourceType.plugin, r.resourceType.category, r.resourceType.id, r.version " //
-        + "ORDER BY r.resourceType.category, r.resourceType.plugin, r.resourceType.name, r.version ")
+        + "ORDER BY r.resourceType.category, r.resourceType.plugin, r.resourceType.name, r.version "),
 
-})
+    @NamedQuery(name = Resource.QUERY_RESOURCE_VERSION_AND_DRIFT_IN_COMPLIANCE, query = ""
+        + "SELECT new org.rhq.core.domain.resource.composite.ResourceInstallCount("
+        + "r.resourceType.name, r.resourceType.plugin, r.resourceType.category, r.resourceType.id, count(distinct r), "
+        + "r.version, size(templates), 0) "
+        + "FROM Resource r JOIN r.resourceType type JOIN type.driftDefinitionTemplates templates "
+        + "WHERE r.inventoryStatus = 'COMMITTED' AND " //
+        + "      0 = ( SELECT COUNT(defs) FROM r.driftDefinitions defs WHERE NOT defs.complianceStatus = 0) "
+        + "GROUP BY r.resourceType.name, r.resourceType.plugin, r.resourceType.category, r.resourceType.id, r.version "
+        + "ORDER BY r.resourceType.category, r.resourceType.plugin, r.resourceType.name, r.version "),
+
+    @NamedQuery(name = Resource.QUERY_RESOURCE_VERSION_AND_DRIFT_OUT_OF_COMPLIANCE, query = ""
+        + "SELECT new org.rhq.core.domain.resource.composite.ResourceInstallCount("
+        + "r.resourceType.name, r.resourceType.plugin, r.resourceType.category, r.resourceType.id, count(distinct r), "
+        + "r.version, size(templates), 1) "
+        + "FROM Resource r JOIN r.resourceType type JOIN type.driftDefinitionTemplates templates "
+        + "WHERE r.inventoryStatus = 'COMMITTED' AND " //
+        + "      0 < ( SELECT COUNT(defs) FROM r.driftDefinitions defs WHERE defs.complianceStatus <> 0) "
+        + "GROUP BY r.resourceType.name, r.resourceType.plugin, r.resourceType.category, r.resourceType.id, r.version "
+        + "ORDER BY r.resourceType.category, r.resourceType.plugin, r.resourceType.name, r.version ") })
 @SequenceGenerator(name = "RHQ_RESOURCE_SEQ", sequenceName = "RHQ_RESOURCE_ID_SEQ")
 @Table(name = Resource.TABLE_NAME)
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -884,6 +902,9 @@ public class Resource implements Comparable<Resource>, Serializable {
 
     public static final String QUERY_RESOURCE_REPORT = "Resource.findResourceReport";
     public static final String QUERY_RESOURCE_VERSION_REPORT = "Resource.findResourceVersionReport";
+
+    public static final String QUERY_RESOURCE_VERSION_AND_DRIFT_IN_COMPLIANCE = "Resource.findResourceVersionDriftInCompliance";
+    public static final String QUERY_RESOURCE_VERSION_AND_DRIFT_OUT_OF_COMPLIANCE = "Resource.findResourceVersionDriftOutOfCompliance";
 
     private static final int UUID_LENGTH = 36;
 
@@ -1281,6 +1302,12 @@ public class Resource implements Comparable<Resource>, Serializable {
         return this.mtime;
     }
 
+    /**
+     * Call this directly only when needing manual manipulation of the mtime. Otherwise, you probably want to
+     * call {@link #setAgentSynchronizationNeeded()}.
+     * 
+     * @param mtime
+     */
     public void setMtime(long mtime) {
         this.mtime = mtime;
     }
@@ -1315,8 +1342,6 @@ public class Resource implements Comparable<Resource>, Serializable {
      *
      * For a list of changes that the agent cares about, see InventoryManager.mergeResource(Resource, Resource)
      */
-
-    // @PreUpdate
     public void setAgentSynchronizationNeeded() {
         this.mtime = System.currentTimeMillis();
     }
@@ -1413,7 +1438,7 @@ public class Resource implements Comparable<Resource>, Serializable {
         return schedules;
     }
 
-    public void setSchendules(Set<MeasurementSchedule> schedules) {
+    public void setSchedules(Set<MeasurementSchedule> schedules) {
         this.schedules = schedules;
     }
 
@@ -1764,8 +1789,29 @@ public class Resource implements Comparable<Resource>, Serializable {
         driftDefinition.setResource(this);
     }
 
+    // NOTE: It's vital that compareTo() is consistent with equals(), otherwise TreeSets containing Resources, or
+    //       TreeMaps with Resources as keys, will not work reliably. See the Javadoc for Comparable for a precise
+    //       definition of "consistent with equals()".
+    @Override
     public int compareTo(Resource that) {
-        return this.name.compareTo(that.getName());
+        if (this == that) {
+            return 0;
+        }
+        int result;
+        if (this.name != null) {
+            result = (that.name != null) ? this.name.compareTo(that.name) : -1;
+        } else {
+            result = (that.name == null) ? 0 : 1;
+        }
+        if (result == 0) {
+            // The names are equal - compare the UUIDs to break the tie.
+            if (this.uuid != null) {
+                result = (that.uuid != null) ? this.uuid.compareTo(that.uuid) : -1;
+            } else {
+                result = (that.uuid == null) ? 0 : 1;
+            }
+        }
+        return result;
     }
 
     @Override

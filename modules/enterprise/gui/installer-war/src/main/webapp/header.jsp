@@ -20,7 +20,7 @@
       <c:if test="<%= new ServerInformation().isFullyDeployed() && request.getRequestURI().indexOf("installer/start") == -1 %>">
       <script type="text/javascript" language="JavaScript">
 
-         var startPage = '/Dashboard.do';
+         var startPage = '/startupstatus';
          var xmlRequest = false;
 
          function doLoad()
@@ -49,7 +49,7 @@
             }
 
             xmlRequest.onreadystatechange = processStateChange;
-            xmlRequest.open('GET', startPage, true);
+            xmlRequest.open('HEAD', startPage, true);
             xmlRequest.send(null);
          }
 
@@ -62,8 +62,14 @@
                if (xmlRequest.status == 200 || xmlRequest.status == 401)
                {
                   linkText = "${bundle.alreadyInstalledStartedLink}";
+                  reminderText = "${bundle.alreadyInstalledReminder}";
+                  productInstalled = "${bundle.alreadyInstalled}";
+                  reminderContent ='';
+                  if(productInstalled.indexOf("RHQ")==-1){
+                    reminderContent = '<br/><br/><b>'+reminderText+'</b><br/>';
+                  }
                   document.getElementById('pleasewait-image').src="/images/finished.gif";
-                  document.getElementById('progressBarMessage').innerHTML='<a class="small" href="/">' + linkText + '<\/a>';
+                  document.getElementById('progressBarMessage').innerHTML='<a class="small" href="/coregui">' + linkText + '<\/a>'+reminderContent;
                   // this will immediately forward to the start page, uncomment if we want that functionality
                   // window.location.replace( startPage );
                }

@@ -20,17 +20,13 @@ package org.rhq.enterprise.gui.coregui.client.drift;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.CanvasItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.layout.VLayout;
 
 import org.rhq.core.domain.common.EntityContext;
 import org.rhq.core.domain.criteria.DriftDefinitionCriteria;
@@ -45,12 +41,12 @@ import org.rhq.enterprise.gui.coregui.client.CoreGUI;
 import org.rhq.enterprise.gui.coregui.client.DetailsView;
 import org.rhq.enterprise.gui.coregui.client.ImageManager;
 import org.rhq.enterprise.gui.coregui.client.LinkManager;
-import org.rhq.enterprise.gui.coregui.client.PopupWindow;
 import org.rhq.enterprise.gui.coregui.client.ViewPath;
 import org.rhq.enterprise.gui.coregui.client.components.buttons.BackButton;
 import org.rhq.enterprise.gui.coregui.client.components.carousel.BookmarkableCarousel;
 import org.rhq.enterprise.gui.coregui.client.components.form.EnumSelectItem;
 import org.rhq.enterprise.gui.coregui.client.drift.DriftCarouselMemberView.DriftSelectionListener;
+import org.rhq.enterprise.gui.coregui.client.drift.util.DiffUtility;
 import org.rhq.enterprise.gui.coregui.client.gwt.DriftGWTServiceAsync;
 import org.rhq.enterprise.gui.coregui.client.gwt.GWTServiceLookup;
 import org.rhq.enterprise.gui.coregui.client.util.RPCDataSource;
@@ -70,7 +66,7 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
     private int driftDefId;
     private EntityContext context;
     private boolean hasWriteAccess;
-    private Integer maxCarouselEndFilter;
+    private Integer maxSnapshotVersion;
     private ArrayList<Record> selectedRecords = new ArrayList<Record>();
     private boolean useDriftDetailsView;
 
@@ -157,11 +153,9 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
                             }
                         });
 
+                        // descending order, so highest changeset version first
                         if (null == carouselStart) {
                             carouselStart = changeSet.getVersion();
-                            if (null == maxCarouselEndFilter) {
-                                maxCarouselEndFilter = carouselStart;
-                            }
                         }
                         carouselEnd = changeSet.getVersion();
 
@@ -169,20 +163,20 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
                             break;
                         }
                     }
+                    if (null == maxSnapshotVersion || null == carouselStart || maxSnapshotVersion < carouselStart) {
+                        maxSnapshotVersion = carouselStart;
+                        setCarouselStartFilterMax(maxSnapshotVersion);
+                    }
+
+                    setCarouselStartFilter(carouselStart);
+                    setCarouselEndFilter(carouselEnd);
+                    setCarouselSizeFilter(carouselSize);
 
                     if (!isRefresh) {
                         DriftCarouselView.super.onDraw();
                     } else {
                         DriftCarouselView.this.refreshCarouselInfo();
                     }
-
-                    Integer currentStartFilterMax = getCarouselStartFilterMax();
-                    if (null == currentStartFilterMax || currentStartFilterMax < carouselStart) {
-                        setCarouselStartFilterMax(carouselStart);
-                    }
-                    setCarouselStartFilter(carouselStart);
-                    setCarouselEndFilter(carouselEnd);
-                    setCarouselSizeFilter(carouselSize);
                 }
 
                 public void onFailure(Throwable caught) {
@@ -220,32 +214,31 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
      * @param changeSetCriteria
      */
     private void addCarouselCriteria(GenericDriftChangeSetCriteria changeSetCriteria) {
-        Integer carouselStartFilter;
-        Integer carouselEndFilter;
+        Integer startVersion; // low snapshot version (carouselEndFilter)
+        Integer endVersion; // high snapshot version (carouselStartFilter)
 
-        // if no startFilter is set then include changesets up to the most recent
-        try {
-            carouselStartFilter = Integer.valueOf(getCarouselStartFilter());
-            if (carouselStartFilter > 0) {
-                changeSetCriteria.addFilterEndVersion(String.valueOf(carouselStartFilter));
-            }
-        } catch (Exception e) {
-            carouselStartFilter = null;
+        // if no startFilter is set then don't limit the endVersion
+        endVersion = getCarouselStartFilter();
+        if (null != endVersion) {
+            changeSetCriteria.addFilterEndVersion(String.valueOf(endVersion));
         }
 
         // if no endFilter is set then include changesets greater than 0 (never include 0, the initial snapshot)
-        try {
-            carouselEndFilter = Integer.valueOf(getCarouselEndFilter());
-            if (carouselEndFilter < 1) {
-                carouselEndFilter = 1;
-            } else if (carouselEndFilter <= maxCarouselEndFilter) {
-                changeSetCriteria.addFilterStartVersion(String.valueOf(carouselEndFilter));
-            }
-        } catch (Exception e) {
-            carouselEndFilter = null;
+        // else ensure endFilter is not greater than makes sense 
+        startVersion = getCarouselEndFilter();
+        if (null == startVersion || 1 > startVersion) {
+            startVersion = 1;
+
+        } else if (null != endVersion && startVersion > endVersion) {
+            startVersion = endVersion;
         }
 
-        // apply the drift-level carousel filters in order to filter out changesets that have no applicab;e drift 
+        if (null != maxSnapshotVersion && startVersion > maxSnapshotVersion) {
+            startVersion = maxSnapshotVersion;
+        }
+        changeSetCriteria.addFilterStartVersion(String.valueOf(startVersion));
+
+        // apply the drift-level carousel filters in order to filter out changesets that have no applicable drift 
         Criteria criteria = getCurrentCriteria();
         DriftCategory[] driftCategoriesFilter = RPCDataSource.getArrayFilter(criteria,
             DriftDataSource.FILTER_CATEGORIES, DriftCategory.class);
@@ -269,75 +262,29 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
         addCarouselAction("Compare", MSG.common_button_compare(), null, new CarouselAction() {
 
             public void executeAction(Object actionValue) {
+                Record record1 = selectedRecords.get(0);
+                Record record2 = selectedRecords.get(1);
+                final String path = record1.getAttribute(DriftDataSource.ATTR_PATH);
+                String id1 = record1.getAttribute(DriftDataSource.ATTR_ID);
+                String id2 = record2.getAttribute(DriftDataSource.ATTR_ID);
+                // regardless of selection order, compare the same way, showing newest changes with '+' signs 
+                int version1 = record1.getAttributeAsInt(DriftDataSource.ATTR_CHANGESET_VERSION);
+                int version2 = record2.getAttributeAsInt(DriftDataSource.ATTR_CHANGESET_VERSION);
+                String diffOldId = (version1 < version2) ? id1 : id2;
+                String diffNewId = (version1 < version2) ? id2 : id1;
 
-                String id1 = selectedRecords.get(0).getAttribute(DriftDataSource.ATTR_ID);
-                String id2 = selectedRecords.get(1).getAttribute(DriftDataSource.ATTR_ID);
-                final String path = selectedRecords.get(0).getAttribute(DriftDataSource.ATTR_PATH);
-
-                GWTServiceLookup.getDriftService().generateUnifiedDiffByIds(id1, id2,
+                GWTServiceLookup.getDriftService().generateUnifiedDiffByIds(diffOldId, diffNewId,
                     new AsyncCallback<FileDiffReport>() {
-                        @Override
                         public void onFailure(Throwable caught) {
-                            CoreGUI.getErrorHandler().handleError("Failed to generate diff", caught);
+                            CoreGUI.getErrorHandler().handleError("Failed to generate diff.", caught);
                         }
 
-                        @Override
                         public void onSuccess(FileDiffReport diffReport) {
-                            String diffContents = toHtml(diffReport.getDiff(), 1, 2);
-                            LocatableWindow window = createDiffViewer(diffContents, path, 1, 2);
+                            String diffContents = DiffUtility.formatAsHtml(diffReport.getDiff(), 1, 2);
+                            LocatableWindow window = DiffUtility.createDiffViewerWindow(diffContents, path, 1, 2);
                             window.show();
                         }
-
-                        private String toHtml(List<String> deltas, int oldVersion, int newVersion) {
-                            StringBuilder diff = new StringBuilder();
-                            diff.append("<font color=\"red\">").append(deltas.get(0)).append(":").append(oldVersion)
-                                .append("</font><br/>");
-                            diff.append("<font color=\"green\">").append(deltas.get(1)).append(":").append(newVersion)
-                                .append("</font><br/>");
-
-                            for (String line : deltas.subList(2, deltas.size())) {
-                                if (line.startsWith("@@")) {
-                                    diff.append("<font color=\"purple\">").append(line).append("</font><br/>");
-                                } else if (line.startsWith("-")) {
-                                    diff.append("<font color=\"red\">").append(line).append("</font><br/>");
-                                } else if (line.startsWith("+")) {
-                                    diff.append("<font color=\"green\">").append(line).append("</font><br/>");
-                                } else {
-                                    diff.append(line).append("<br/>");
-                                }
-                            }
-                            return diff.toString();
-                        }
-
-                        private LocatableWindow createDiffViewer(String contents, String path, int oldVersion,
-                            int newVersion) {
-                            VLayout layout = new VLayout();
-                            DynamicForm form = new DynamicForm();
-                            form.setWidth100();
-                            form.setHeight100();
-
-                            CanvasItem canvasItem = new CanvasItem();
-                            canvasItem.setColSpan(2);
-                            canvasItem.setShowTitle(false);
-                            canvasItem.setWidth("*");
-                            canvasItem.setHeight("*");
-
-                            Canvas canvas = new Canvas();
-                            canvas.setContents(contents);
-                            canvasItem.setCanvas(canvas);
-
-                            form.setItems(canvasItem);
-                            layout.addMember(form);
-
-                            PopupWindow window = new PopupWindow("diffViewer", layout);
-                            window.setTitle(path + ":" + oldVersion + ":" + newVersion);
-                            window.setIsModal(false);
-
-                            return window;
-                        }
-
                     });
-
             }
 
             public boolean isEnabled() {
@@ -350,6 +297,7 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
 
                 return false;
             }
+
         });
 
         super.configureCarousel();
@@ -364,10 +312,10 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
         categories.put(DriftCategory.FILE_REMOVED.name(), MSG.view_drift_category_fileRemoved());
         LinkedHashMap<String, String> categoryIcons = new LinkedHashMap<String, String>(3);
         categoryIcons.put(DriftCategory.FILE_ADDED.name(), ImageManager.getDriftCategoryIcon(DriftCategory.FILE_ADDED));
-        categoryIcons.put(DriftCategory.FILE_CHANGED.name(), ImageManager
-            .getDriftCategoryIcon(DriftCategory.FILE_CHANGED));
-        categoryIcons.put(DriftCategory.FILE_REMOVED.name(), ImageManager
-            .getDriftCategoryIcon(DriftCategory.FILE_REMOVED));
+        categoryIcons.put(DriftCategory.FILE_CHANGED.name(),
+            ImageManager.getDriftCategoryIcon(DriftCategory.FILE_CHANGED));
+        categoryIcons.put(DriftCategory.FILE_REMOVED.name(),
+            ImageManager.getDriftCategoryIcon(DriftCategory.FILE_REMOVED));
 
         SelectItem categoryFilter = new EnumSelectItem(DriftDataSource.FILTER_CATEGORIES, MSG.common_title_category(),
             DriftCategory.class, categories, categoryIcons);
@@ -406,10 +354,12 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
     @Override
     public void renderView(ViewPath viewPath) {
         if (!viewPath.isEnd() && !viewPath.isNextEnd()) {
-            this.useDriftDetailsView = !viewPath.isNextEnd() && "Drift".equals(viewPath.getNext().getPath());
+            String detail = viewPath.getNext().getPath();
+            if ("Drift".equals(detail) || "Snapshot".equals(detail)) {
+                this.useDriftDetailsView = !viewPath.isNextEnd() && "Drift".equals(viewPath.getNext().getPath());
+                super.renderView(viewPath);
+            }
         }
-
-        super.renderView(viewPath);
     }
 
     @Override
@@ -418,7 +368,7 @@ public class DriftCarouselView extends BookmarkableCarousel implements DetailsVi
             return new DriftDetailsView(extendLocatorId("Drift"), id);
         }
 
-        return new DriftSnapshotView(extendLocatorId("Snapshot"), null, context.getResourceId(), driftDefId, Integer
-            .valueOf(id), hasWriteAccess);
+        return new DriftSnapshotView(extendLocatorId("Snapshot"), null, context.getResourceId(), driftDefId,
+            Integer.valueOf(id), hasWriteAccess);
     }
 }

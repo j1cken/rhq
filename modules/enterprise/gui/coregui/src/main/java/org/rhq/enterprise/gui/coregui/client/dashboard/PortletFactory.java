@@ -30,6 +30,7 @@ import org.rhq.core.domain.common.EntityContext;
 import org.rhq.core.domain.dashboard.DashboardPortlet;
 import org.rhq.enterprise.gui.coregui.client.CoreGUI;
 import org.rhq.enterprise.gui.coregui.client.ImageManager;
+import org.rhq.enterprise.gui.coregui.client.dashboard.portlets.groups.FavoriteGroupsPortlet;
 import org.rhq.enterprise.gui.coregui.client.dashboard.portlets.groups.GroupAlertsPortlet;
 import org.rhq.enterprise.gui.coregui.client.dashboard.portlets.groups.GroupBundleDeploymentsPortlet;
 import org.rhq.enterprise.gui.coregui.client.dashboard.portlets.groups.GroupConfigurationUpdatesPortlet;
@@ -100,8 +101,12 @@ public class PortletFactory {
         globalPortletFactoryMap.put(RecentAlertsPortlet.KEY, RecentAlertsPortlet.Factory.INSTANCE);
         globalPortletFactoryMap.put(ResourceGraphPortlet.KEY, ResourceGraphPortlet.Factory.INSTANCE);
         globalPortletFactoryMap.put(ResourceGroupGraphPortlet.KEY, ResourceGroupGraphPortlet.Factory.INSTANCE);
-        globalPortletFactoryMap.put(TagCloudPortlet.KEY, TagCloudPortlet.Factory.INSTANCE);
+        //conditionally add tags. Defaults to true, not available in JON builds.
+        if (CoreGUI.isTagsEnabledForUI()) {
+            globalPortletFactoryMap.put(TagCloudPortlet.KEY, TagCloudPortlet.Factory.INSTANCE);
+        }
         globalPortletFactoryMap.put(FavoriteResourcesPortlet.KEY, FavoriteResourcesPortlet.Factory.INSTANCE);
+        globalPortletFactoryMap.put(FavoriteGroupsPortlet.KEY, FavoriteGroupsPortlet.Factory.INSTANCE);
         globalPortletFactoryMap.put(MashupPortlet.KEY, MashupPortlet.Factory.INSTANCE);
         globalPortletFactoryMap.put(MessagePortlet.KEY, MessagePortlet.Factory.INSTANCE);
         globalPortletFactoryMap.put(ProblemResourcesPortlet.KEY, ProblemResourcesPortlet.Factory.INSTANCE);
@@ -117,8 +122,12 @@ public class PortletFactory {
         globalPortletNameMap.put(RecentAlertsPortlet.NAME, RecentAlertsPortlet.KEY);
         globalPortletNameMap.put(ResourceGraphPortlet.NAME, ResourceGraphPortlet.KEY);
         globalPortletNameMap.put(ResourceGroupGraphPortlet.NAME, ResourceGroupGraphPortlet.KEY);
-        globalPortletNameMap.put(TagCloudPortlet.NAME, TagCloudPortlet.KEY);
+        //conditionally add tags. Defaults to true, not available in JON builds.
+        if (CoreGUI.isTagsEnabledForUI()) {
+            globalPortletNameMap.put(TagCloudPortlet.NAME, TagCloudPortlet.KEY);
+        }
         globalPortletNameMap.put(FavoriteResourcesPortlet.NAME, FavoriteResourcesPortlet.KEY);
+        globalPortletNameMap.put(FavoriteGroupsPortlet.NAME, FavoriteGroupsPortlet.KEY);
         globalPortletNameMap.put(MashupPortlet.NAME, MashupPortlet.KEY);
         globalPortletNameMap.put(MessagePortlet.NAME, MessagePortlet.KEY);
         globalPortletNameMap.put(ProblemResourcesPortlet.NAME, ProblemResourcesPortlet.KEY);

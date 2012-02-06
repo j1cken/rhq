@@ -104,6 +104,8 @@ public interface DriftManagerRemote {
      */
     String getDriftFileBits(Subject subject, String hash);
 
+    byte[] getDriftFileAsByteArray(Subject subject, String hash);
+
     /**
      * Calculate and return requested Drift Snapshot.
      *  
@@ -117,5 +119,32 @@ public interface DriftManagerRemote {
 
     void pinSnapshot(Subject subject, int driftDefId, int snapshotVersion);
 
-    void updateDriftDefinition(Subject subject, EntityContext entityContext, DriftDefinition driftConfig);
+    /**
+     * <p>
+     * Saves or updates the provided drift definition. If the definition, identified by name, already exists, an update
+     * is performed; otherwise, a new drift definition is saved. Agents if available will be notified of the change.
+     * If agents are unreachable, the definition will still be saved/updated. Changes will then propagate to agents
+     * the next time they do an inventory sync.
+     * </p>
+     * <p>
+     * Several validation checks are performed before the definition is persisted. If it is a new definition, the
+     * following checks are performed:
+     * <ul>
+     *   <li>Verify that the resource supports drift management</li>
+     *   <li>Verify that the template (if specified) already exists in the database</li>
+     *   <li>Verify that the template (if specified) belongs to the correct resource type</li>
+     * </ul>
+     * For new and existing definitions these additional checks are performed:
+     * <ul>
+     *   <li>Verify that the definition name does not contain illegal characters</li>
+     *   <li>Verify that the base directory does not contain illegal characters</li>
+     *   <li>Verify that filters do not contain illegal characters</li>
+     * </ul>
+     * </p>
+     *
+     * @param subject
+     * @param entityContext
+     * @param driftDef
+     */
+    void updateDriftDefinition(Subject subject, EntityContext entityContext, DriftDefinition driftDef);
 }
