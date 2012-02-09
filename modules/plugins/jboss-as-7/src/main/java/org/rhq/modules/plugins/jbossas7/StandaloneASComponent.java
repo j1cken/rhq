@@ -19,6 +19,9 @@
 package org.rhq.modules.plugins.jbossas7;
 
 import org.rhq.core.domain.configuration.Configuration;
+import org.rhq.core.pluginapi.event.log.LogFileEventResourceComponentHelper;
+import org.rhq.core.pluginapi.inventory.InvalidPluginConfigurationException;
+import org.rhq.core.pluginapi.inventory.ResourceContext;
 import org.rhq.core.pluginapi.operation.OperationFacet;
 import org.rhq.core.pluginapi.operation.OperationResult;
 import org.rhq.modules.plugins.jbossas7.json.Address;
@@ -30,6 +33,10 @@ import org.rhq.modules.plugins.jbossas7.json.Result;
  * @author Heiko W. Rupp
  */
 public class StandaloneASComponent extends BaseServerComponent implements OperationFacet {
+
+          // needed for log tracking
+    private LogFileEventResourceComponentHelper logFileEventDelegate;
+
 
     @Override
     public OperationResult invokeOperation(String name,
@@ -52,4 +59,16 @@ public class StandaloneASComponent extends BaseServerComponent implements Operat
         return operationResult;
     }
 
+   @Override
+   public void start(ResourceContext context) throws InvalidPluginConfigurationException, Exception {
+      super.start(context);
+      this.logFileEventDelegate = new LogFileEventResourceComponentHelper(context);
+      this.logFileEventDelegate.startLogFileEventPollers();
+   }
+
+   @Override
+   public void stop() {
+      super.stop();
+      this.logFileEventDelegate.stopLogFileEventPollers();
+   }
 }
