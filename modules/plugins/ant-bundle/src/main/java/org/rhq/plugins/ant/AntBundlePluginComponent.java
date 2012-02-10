@@ -18,21 +18,10 @@
  */
 package org.rhq.plugins.ant;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
-
 import org.rhq.bundle.ant.AntLauncher;
 import org.rhq.bundle.ant.BundleAntProject;
 import org.rhq.bundle.ant.DeployPropertyNames;
@@ -49,6 +38,7 @@ import org.rhq.core.domain.configuration.Configuration;
 import org.rhq.core.domain.configuration.Property;
 import org.rhq.core.domain.configuration.PropertySimple;
 import org.rhq.core.domain.measurement.AvailabilityType;
+import org.rhq.core.domain.tagging.Tag;
 import org.rhq.core.pluginapi.bundle.BundleDeployRequest;
 import org.rhq.core.pluginapi.bundle.BundleDeployResult;
 import org.rhq.core.pluginapi.bundle.BundleFacet;
@@ -63,6 +53,17 @@ import org.rhq.core.util.stream.StreamUtil;
 import org.rhq.core.util.updater.DeployDifferences;
 import org.rhq.core.util.updater.DeploymentsMetadata;
 import org.rhq.core.util.updater.FileHashcodeMap;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author John Mazzitelli
@@ -319,12 +320,21 @@ public class AntBundlePluginComponent implements ResourceComponent, BundleFacet 
         antProps.setProperty(DeployPropertyNames.DEPLOY_REVERT, String.valueOf(request.isRevert()));
         antProps.setProperty(DeployPropertyNames.DEPLOY_CLEAN, String.valueOf(request.isCleanDeployment()));
 
-        Map<String, String> sysFacts = SystemInfoFactory.fetchTemplateEngine().getTokens();
-        for (Map.Entry<String, String> fact : sysFacts.entrySet()) {
-            antProps.setProperty(fact.getKey(), fact.getValue());
-        }
+       Map<String, String> sysFacts = SystemInfoFactory.fetchTemplateEngine().getTokens();
 
-        Configuration config = bundleDeployment.getConfiguration();
+       // add tags
+       Set<Tag> tags = resourceDeployment.getResource().getTags();
+       if (tags != null) {
+          for (Tag tag : tags) {
+             sysFacts.put(checkForTagNamespace(tag.getNamespace()) + tag.getSemantic(), tag.getName());
+          }
+       }
+       for (Map.Entry<String, String> fact : sysFacts.entrySet()) {
+          antProps.setProperty(fact.getKey(), fact.getValue());
+       }
+
+
+       Configuration config = bundleDeployment.getConfiguration();
         if (config != null) {
             Map<String, Property> allProperties = config.getAllProperties();
             for (Map.Entry<String, Property> entry : allProperties.entrySet()) {
@@ -345,7 +355,13 @@ public class AntBundlePluginComponent implements ResourceComponent, BundleFacet 
         return antProps;
     }
 
-    private String formatDiff(DeployDifferences diffs) {
+   private String checkForTagNamespace(String namespace) {
+      // note: ':' not allowed in tokens, so this is replaced with '.'
+      return namespace!=null ? DeployPropertyNames.DEPLOY_TAG_PREFIX + namespace + "." : DeployPropertyNames
+            .DEPLOY_TAG_PREFIX;
+   }
+
+   private String formatDiff(DeployDifferences diffs) {
         String indent = "    ";
         String nl = "\n";
         StringBuilder str = new StringBuilder("DEPLOYMENT DETAILS:");

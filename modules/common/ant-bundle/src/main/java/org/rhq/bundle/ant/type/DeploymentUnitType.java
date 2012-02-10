@@ -17,26 +17,11 @@
  */
 package org.rhq.bundle.ant.type;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
-
-import org.rhq.bundle.ant.DeployPropertyNames;
 import org.rhq.bundle.ant.BundleAntProject.AuditStatus;
+import org.rhq.bundle.ant.DeployPropertyNames;
 import org.rhq.core.domain.configuration.Configuration;
 import org.rhq.core.domain.configuration.PropertySimple;
 import org.rhq.core.system.SystemInfoFactory;
@@ -47,6 +32,21 @@ import org.rhq.core.util.updater.DeployDifferences;
 import org.rhq.core.util.updater.Deployer;
 import org.rhq.core.util.updater.DeploymentData;
 import org.rhq.core.util.updater.DeploymentProperties;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * An Ant task for deploying a bundle or previewing the deployment.
@@ -104,7 +104,7 @@ public class DeploymentUnitType extends AbstractBundleType {
             boolean dryRun = getProject().isDryRun();
             boolean willManageRootDir = Boolean.parseBoolean(this.manageRootDir);
             File deployDir = getProject().getDeployDir();
-            TemplateEngine templateEngine = createTemplateEngine();
+           TemplateEngine templateEngine = createTemplateEngine(getProject().getUserProperties());
             int deploymentId = getProject().getDeploymentId();
             DeploymentProperties deploymentProps = new DeploymentProperties(deploymentId, getProject().getBundleName(),
                 getProject().getBundleVersion(), getProject().getBundleDescription());
@@ -542,16 +542,27 @@ public class DeploymentUnitType extends AbstractBundleType {
         this.ignorePattern = getPattern(fileSets);
     }
 
-    private TemplateEngine createTemplateEngine() {
-        TemplateEngine templateEngine = SystemInfoFactory.fetchTemplateEngine();
-        // Add the deployment props to the template engine's tokens.
-        Configuration config = getProject().getConfiguration();
-        for (PropertySimple prop : config.getSimpleProperties().values()) {
-            templateEngine.getTokens().put(prop.getName(), prop.getStringValue());
-        }
-        // And add the special rhq.deploy.dir prop.
-        templateEngine.getTokens().put(DeployPropertyNames.DEPLOY_DIR,
-            getProject().getProperty(DeployPropertyNames.DEPLOY_DIR));
-        return templateEngine;
-    }
+   private TemplateEngine createTemplateEngine(Hashtable<String, String> properties) {
+      TemplateEngine templateEngine = SystemInfoFactory.fetchTemplateEngine();
+
+      // add tags to Template Engine tokens
+      if (properties != null) {
+         for (String s : properties.keySet()) {
+            if (s.startsWith(DeployPropertyNames.DEPLOY_TAG_PREFIX)) {
+               templateEngine.getTokens().put(s, properties.get(s));
+            }
+         }
+      }
+      
+      // Add the deployment props to the template engine's tokens.
+      Configuration config = getProject().getConfiguration();
+      for (PropertySimple prop : config.getSimpleProperties().values()) {
+         templateEngine.getTokens().put(prop.getName(), prop.getStringValue());
+      }
+      // And add the special rhq.deploy.dir prop.
+      templateEngine.getTokens().put(DeployPropertyNames.DEPLOY_DIR,
+                                     getProject().getProperty(DeployPropertyNames.DEPLOY_DIR));
+      return templateEngine;
+   }
+
 }

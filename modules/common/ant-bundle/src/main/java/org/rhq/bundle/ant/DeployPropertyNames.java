@@ -34,6 +34,13 @@ public class DeployPropertyNames {
      */
     public static final String DEPLOY_DRY_RUN = "rhq.deploy.dryRun";
 
+   /**
+    * Prefix which is appended to Ant properties.
+    * Tags of a resource are available as Ant properties during content bundle deployment. A "rhq
+    * .tag:[<namespace>:]<semantic>" will be substituted by "<name>".
+    */
+   public static final String DEPLOY_TAG_PREFIX = "rhq.tag.";
+
     private DeployPropertyNames() {
     }
 }

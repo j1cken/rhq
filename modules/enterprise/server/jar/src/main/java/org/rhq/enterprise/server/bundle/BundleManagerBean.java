@@ -18,33 +18,9 @@
  */
 package org.rhq.enterprise.server.bundle;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-
 import org.rhq.core.clientapi.agent.bundle.BundleAgentService;
 import org.rhq.core.clientapi.agent.bundle.BundlePurgeRequest;
 import org.rhq.core.clientapi.agent.bundle.BundlePurgeResponse;
@@ -78,6 +54,7 @@ import org.rhq.core.domain.criteria.BundleDestinationCriteria;
 import org.rhq.core.domain.criteria.BundleFileCriteria;
 import org.rhq.core.domain.criteria.BundleResourceDeploymentCriteria;
 import org.rhq.core.domain.criteria.BundleVersionCriteria;
+import org.rhq.core.domain.criteria.ResourceCriteria;
 import org.rhq.core.domain.criteria.ResourceGroupCriteria;
 import org.rhq.core.domain.criteria.ResourceTypeCriteria;
 import org.rhq.core.domain.resource.Resource;
@@ -99,12 +76,35 @@ import org.rhq.enterprise.server.content.ContentManagerLocal;
 import org.rhq.enterprise.server.content.RepoManagerLocal;
 import org.rhq.enterprise.server.core.AgentManagerLocal;
 import org.rhq.enterprise.server.plugin.pc.bundle.BundleServerPluginManager;
+import org.rhq.enterprise.server.resource.ResourceManagerLocal;
 import org.rhq.enterprise.server.resource.ResourceTypeManagerLocal;
 import org.rhq.enterprise.server.resource.group.ResourceGroupManagerLocal;
 import org.rhq.enterprise.server.safeinvoker.HibernateDetachUtility;
 import org.rhq.enterprise.server.safeinvoker.HibernateDetachUtility.SerializationType;
 import org.rhq.enterprise.server.util.CriteriaQueryGenerator;
 import org.rhq.enterprise.server.util.CriteriaQueryRunner;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages the creation and usage of bundles.
@@ -146,6 +146,9 @@ public class BundleManagerBean implements BundleManagerLocal, BundleManagerRemot
 
     @EJB
     private ResourceGroupManagerLocal resourceGroupManager;
+
+   @EJB
+   private ResourceManagerLocal resourceManager;
 
     @Override
     public ResourceTypeBundleConfiguration getResourceTypeBundleConfiguration(Subject subject, int compatGroupId)
@@ -1161,7 +1164,13 @@ public class BundleManagerBean implements BundleManagerLocal, BundleManagerRemot
         }
         BundleResourceDeployment resourceDeployment = resourceDeployments.get(0);
 
-        // make sure the deployment contains the info required by the schedule service
+       ResourceCriteria rc = new ResourceCriteria();
+       rc.addFilterId(resourceDeployment.getResource().getId());
+       rc.fetchTags(true);
+       Resource resource = resourceManager.findResourcesByCriteria(subject, rc).get(0);
+       resourceDeployment.setResource(resource);
+
+       // make sure the deployment contains the info required by the schedule service
         BundleDeploymentCriteria bdc = new BundleDeploymentCriteria();
         bdc.addFilterId(resourceDeployment.getBundleDeployment().getId());
         bdc.fetchBundleVersion(true);
@@ -1205,7 +1214,8 @@ public class BundleManagerBean implements BundleManagerLocal, BundleManagerRemot
             throw new IllegalArgumentException("Invalid bundleDeploymentId: " + bundleDeploymentId);
         }
         Resource resource = (Resource) entityManager.find(Resource.class, resourceId);
-        if (null == resource) {
+
+       if (null == resource) {
             throw new IllegalArgumentException("Invalid resourceId (Resource does not exist): " + resourceId);
         }
 
