@@ -124,8 +124,8 @@ public class BaseComponent<T extends ResourceComponent<?>> implements ResourceCo
             managementUser = pluginConfiguration.getSimpleValue("user","-unset-");
             managementPassword = pluginConfiguration.getSimpleValue("password","-unset-");
             connection = new ASConnection(host,port, managementUser, managementPassword);
-           this.logFileEventDelegate = new LogFileEventResourceComponentHelper(context);
-           this.logFileEventDelegate.startLogFileEventPollers();
+            logFileEventDelegate = new LogFileEventResourceComponentHelper(context);
+            logFileEventDelegate.startLogFileEventPollers();
         }
         else {
             connection = ((BaseComponent)context.getParentResourceComponent()).getASConnection();
@@ -147,7 +147,7 @@ public class BaseComponent<T extends ResourceComponent<?>> implements ResourceCo
      */
     public void stop() {
        if (!(context.getParentResourceComponent() instanceof BaseComponent)) {
-          this.logFileEventDelegate.stopLogFileEventPollers();
+          logFileEventDelegate.stopLogFileEventPollers();
        }
     }
 
@@ -584,11 +584,6 @@ public class BaseComponent<T extends ResourceComponent<?>> implements ResourceCo
                     step.addAdditionalProperty("enabled",enabled);
                     ((CompositeOperation)operation).addStep(step);
                 }
-            }
-        } else if (what.equals("naming")) {
-            if (op.equals("jndi-view")) {
-                theAddress.add(address);
-                operation = new Operation("jndi-view",theAddress);
             }
         }
 
