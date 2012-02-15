@@ -988,6 +988,29 @@
 
     </server>
 
+    <server name="Transactions Subsystem"
+            discovery="SubsystemDiscovery"
+            class="BaseComponent"
+            singleton="true"
+            description="General transactions measurements."
+            >
+
+        <runs-inside>
+            <parent-resource-type name="Profile"  plugin="jboss-as-7"/>
+            <parent-resource-type name="JBossAS7 Standalone Server"  plugin="jboss-as-7"/>
+        </runs-inside>
+
+        <plugin-configuration>
+            <c:simple-property name="path" readOnly="true" default="subsystem=transactions"/>
+        </plugin-configuration>
+        
+        <metric property="number-of-nested-transactions"
+                description="The total number of nested (sub) transactions created."
+                measurementType="trendsup"
+                defaultInterval="60000"/>
+
+    </server>
+
     <server name="Datasources"
             discovery="SubsystemDiscovery"
             class="DatasourceComponent"
