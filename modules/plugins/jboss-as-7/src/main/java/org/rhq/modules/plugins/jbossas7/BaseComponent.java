@@ -191,7 +191,7 @@ public class BaseComponent<T extends ResourceComponent<?>> implements ResourceCo
                     }
                 } else if (req.getDataType()== DataType.TRAIT) {
 
-                   String realVal = getStringValue(val);
+                    String realVal = getStringValue(val);
 
                     MeasurementDataTrait data = new MeasurementDataTrait(req,realVal);
                     report.addData(data);
@@ -200,16 +200,16 @@ public class BaseComponent<T extends ResourceComponent<?>> implements ResourceCo
         }
     }
 
-   private String getStringValue(Object val) {
-      String realVal;
-      if (val instanceof String)
-          realVal = (String)val;
-      else
-          realVal = String.valueOf(val);
-      return realVal;
-   }
+    private String getStringValue(Object val) {
+        String realVal;
+        if (val instanceof String)
+            realVal = (String)val;
+        else
+            realVal = String.valueOf(val);
+        return realVal;
+    }
 
-   /**
+    /**
      * Return internal statistics data
      * @param req Schedule for the requested data
      * @param report report to add th data to.
