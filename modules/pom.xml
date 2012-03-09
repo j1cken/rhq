@@ -6,7 +6,7 @@
    <parent>
       <groupId>org.rhq</groupId>
       <artifactId>rhq-parent</artifactId>
-      <version>4.3.0-SNAPSHOT</version>
+      <version>4.4.0-SNAPSHOT</version>
    </parent>
 
    <groupId>org.rhq</groupId>
@@ -18,6 +18,7 @@
 
    <modules>
       <module>test-utils</module>
+      <module>arquillian-integration</module>
    </modules>
 
    <profiles>
