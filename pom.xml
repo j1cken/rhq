@@ -655,6 +655,8 @@
            <artifactId>maven-war-plugin</artifactId>
            <version>2.1</version>
          </plugin>
+
+         <!-- === Codehaus Mojo Plugins === -->
          <plugin>
            <groupId>org.codehaus.mojo</groupId>
            <artifactId>build-helper-maven-plugin</artifactId>
@@ -730,18 +732,11 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <!-- invocation options -->
-          <fork>true</fork>
-          <meminitial>64M</meminitial>
-          <maxmem>512M</maxmem>
-
-          <!-- compiler options -->
           <source>1.6</source>
           <target>1.6</target>
-          <optimize>false</optimize>
           <verbose>true</verbose>
           <proc>none</proc> <!-- disable annotation processing -->
-          <compilerArgument>-Xlint</compilerArgument>
+          <showWarnings>true</showWarnings>
         </configuration>
       </plugin>
 
@@ -1194,6 +1189,20 @@
          </properties>
       </profile>
 
+      <profile>
+         <id>itest.debug</id>
+         <activation>
+            <property>
+               <name>itest.debug</name>
+            </property>
+         </activation>
+
+         <properties>
+            <!-- See: http://maven.apache.org/plugins/maven-failsafe-plugin/integration-test-mojo.html#debugForkedProcess -->
+            <maven.failsafe.debug>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=8797,server=y,suspend=y</maven.failsafe.debug>
+         </properties>
+      </profile>
+
       <!-- This profile should be enabled when a release is being published.
            It will ensure that sources and javadoc jars are built and published
            for each source module. -->
@@ -1345,6 +1354,9 @@
         <developer>
             <name>Robert Buck</name>
             <timezone>-5</timezone>
+            <roles>
+               <role>retired</role>
+            </roles>
         </developer>
         <developer>
             <name>Charles Crouch</name>
@@ -1378,7 +1390,7 @@
         </developer>
         <developer>
             <name>Joseph Marques</name>
-            <url>http://josephmarques.wordpress.com</url>
+            <url>http://josephmarques.wordpress.com/</url>
             <timezone>-5</timezone>
             <roles>
                 <role>retired</role>
@@ -1394,7 +1406,7 @@
         <developer>
             <name>John 'Mazz' Mazzitelli</name>
             <timezone>-5</timezone>
-            <url>http://management-platform.blogspot.com</url>
+            <url>http://management-platform.blogspot.com/</url>
         </developer>
         <developer>
             <name>Stefan Negrea</name>
@@ -1407,12 +1419,12 @@
         <developer>
             <name>Heiko W. Rupp</name>
             <email>hrupp@redhat.com</email>
-            <url>http://pilhuhn.blogspot.com</url>
+            <url>http://pilhuhn.blogspot.com/</url>
             <timezone>+1</timezone>
         </developer>
         <developer>
             <name>John Sanda</name>
-            <url>http://johnsanda.blogspot.com</url>
+            <url>http://johnsanda.blogspot.com/</url>
             <timezone>-5</timezone>
         </developer>
         <developer>
@@ -1429,6 +1441,7 @@
         <developer>
             <name>Ian Springer</name>
             <timezone>-5</timezone>
+            <url>http://freshjava.blogspot.com/</url>
         </developer>
         <developer>
             <name>Mike Thompson</name>
@@ -1488,4 +1501,3 @@
     </mailingLists>
 
 </project>
-
